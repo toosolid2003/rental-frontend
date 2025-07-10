@@ -4,31 +4,58 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatAddress } from "@/lib/utils"
-import { useAccount } from "wagmi"
-
+import { useAccount, useEnsName, useEnsAvatar, useBalance } from "wagmi"
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 function ConnectedHome()    {
 
-    const { address, isConnected }  = useAccount()
+    const user = {
+  username: "theDesignMojo",
+  avatarUrl: null,
+  balance: 2450,
+  leaseScore: 95,
+  }
 
-    return (
+  const payments = [
+    { date: "Jan, 5th", amount: 1400, status: "due" },
+    { date: "Dec, 5th", amount: 1400, status: "paid", color: "green" },
+    { date: "Nov, 10th", amount: 1400, status: "paid", color: "orange" },
+    { date: "Oct, 5th", amount: 1400, status: "paid", color: "green" },
+  ]
+
+
+  const { address }  = useAccount();
+  const { data: ensName, isLoading, isError } = useEnsName({ address });
+  // const { data: ensAvatar } = useEnsAvatar( { name: ensName});
+  const fallbackUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`;
+  const { data } = useBalance({ address });
+
+  return (
     <div className="p-4 max-w-md mx-auto space-y-6 relative pb-24">
       {/* Balance Card */}
       <Card className="bg-gradient-to-r from-blue-600 to-teal-500 text-white rounded-xl shadow-md">
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-4">
-            <Avatar>
-              <AvatarImage src={user.avatarUrl || ""} />
+        <CardContent className="flex flex-row justify-between p-4 space-y-3">
+
+          <ConnectButton showBalance={false} chainStatus="none"/>
+          <div className="flex flex-row items-center gap-4">
+
+            {/* <Avatar className="bg-white">
+              <AvatarImage src={fallbackUrl} />
               <AvatarFallback className="text-black">DM</AvatarFallback>
-            </Avatar>
-            <div>
+            </Avatar> */}
+            {/* <div>
               <div className="text-md">{user.username}</div>
               <div className="text-xs opacity-60">{formatAddress(address)}</div>
-            </div>
+            </div> */}
           </div>
           <div className="flex flex-row items-end">
-            <div className="text-4xl font-bold">${user.balance}</div>
-            <div className="text-xs text-white/70 ml-1 mb-0.5">USD</div>
+            {/* <div className="text-4xl font-bold">${user.balance}</div> */}
+            <div className="text-4xl font-bold">{
+                isLoading ? "Loading balance" : Number(data?.formatted).toFixed(3)
+              }</div>
+            <div className="text-xs text-white/70 ml-1 mb-0.5">{
+              isLoading ? "" : data?.symbol
+            }</div>
           </div>
 
         </CardContent>
