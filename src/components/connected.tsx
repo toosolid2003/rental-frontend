@@ -18,7 +18,7 @@ function ConnectedHome()    {
           <Lease />
           <Button
             className="w-14 h-14 p-0 rounded-full bg-indigo-600 text-white text-3xl fixed bottom-8 right-6 shadow-lg"
-            aria-label="Add lease"></Button>
+            aria-label="Add lease">+</Button>
         </>
 ) : (<DisconnectedHome />)    
       }
