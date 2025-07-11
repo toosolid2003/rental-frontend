@@ -1,115 +1,31 @@
 // DepositFundsButton.jsx
 import React, { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { formatAddress } from "@/lib/utils"
-import { useAccount, useEnsName, useEnsAvatar, useBalance } from "wagmi"
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Profile from "@/components/profile"
+import DisconnectedHome from "./disconnected";
+import Lease from "./lease";
+import { useAccount } from "wagmi";
 
 function ConnectedHome()    {
 
-    const user = {
-  username: "theDesignMojo",
-  avatarUrl: null,
-  balance: 2450,
-  leaseScore: 95,
-  }
-
-  const payments = [
-    { date: "Jan, 5th", amount: 1400, status: "due" },
-    { date: "Dec, 5th", amount: 1400, status: "paid", color: "green" },
-    { date: "Nov, 10th", amount: 1400, status: "paid", color: "orange" },
-    { date: "Oct, 5th", amount: 1400, status: "paid", color: "green" },
-  ]
-
-
-  const { address }  = useAccount();
-  const { data: ensName, isLoading, isError } = useEnsName({ address });
-  // const { data: ensAvatar } = useEnsAvatar( { name: ensName});
-  const fallbackUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`;
-  const { data } = useBalance({ address });
+  const { isConnected } = useAccount();
 
   return (
-    <div className="p-4 max-w-md mx-auto space-y-6 relative pb-24">
-      {/* Balance Card */}
-      <Card className="bg-gradient-to-r from-blue-600 to-teal-500 text-white rounded-xl shadow-md">
-        <CardContent className="flex flex-row justify-between p-4 space-y-3">
-
-          <ConnectButton showBalance={false} chainStatus="none"/>
-          <div className="flex flex-row items-center gap-4">
-
-            {/* <Avatar className="bg-white">
-              <AvatarImage src={fallbackUrl} />
-              <AvatarFallback className="text-black">DM</AvatarFallback>
-            </Avatar> */}
-            {/* <div>
-              <div className="text-md">{user.username}</div>
-              <div className="text-xs opacity-60">{formatAddress(address)}</div>
-            </div> */}
-          </div>
-          <div className="flex flex-row items-end">
-            {/* <div className="text-4xl font-bold">${user.balance}</div> */}
-            <div className="text-4xl font-bold">{
-                isLoading ? "Loading balance" : Number(data?.formatted).toFixed(3)
-              }</div>
-            <div className="text-xs text-white/70 ml-1 mb-0.5">{
-              isLoading ? "" : data?.symbol
-            }</div>
-          </div>
-
-        </CardContent>
-      </Card>
-
-      {/* Lease */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Lease #1</h2>
-          <span className="text-gray-600 text-sm">Score: {user.leaseScore}%</span>
-        </div>
-        <hr />
-
-        {payments.map((p, i) => (
-          <div
-            key={i}
-            className="flex justify-between items-center border-b pb-3 pt-3"
-          >
-            <div>
-              <div className="text-sm text-gray-600">{p.date}</div>
-              <div className="flex flex-row items-end">
-                <div className="text-3xl font-semibold">${p.amount}</div>
-                <div className="text-xs text-gray-500 mb-0.5 ml-1">USD</div>
-              </div>
-            </div>
-            {p.status === "paid" ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm">Paid</span>
-                <span
-                  className={`w-3 h-3 rounded-full ${
-                    p.color === "green"
-                      ? "bg-green-500"
-                      : "bg-orange-400"
-                  }`}
-                />
-              </div>
-            ) : (
-              <Button className="bg-indigo-600 text-white rounded-xl px-6 py-2">
-                Pay
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Floating Action Button */}
-      <Button
-        className="w-14 h-14 p-0 rounded-full bg-indigo-600 text-white text-3xl fixed bottom-8 right-6 shadow-lg"
-        aria-label="Add lease"
-      >
-        +
-      </Button>
-    </div>
+      <>
+        {isConnected ? 
+        (<>
+          <Profile />
+          <Lease />
+          <Button
+            className="w-14 h-14 p-0 rounded-full bg-indigo-600 text-white text-3xl fixed bottom-8 right-6 shadow-lg"
+            aria-label="Add lease"></Button>
+        </>
+) : (<DisconnectedHome />)    
+      }
+    
+      </>
   )
+
 }
 
 export default ConnectedHome;
