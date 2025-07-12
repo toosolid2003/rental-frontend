@@ -22,7 +22,7 @@ function Lease()    {
     <div className="space-y-2 max-w-md mx-auto p-8">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Lease #1</h2>
-          <span className="text-gray-600 text-sm">Score: {user.leaseScore}%</span>
+          <span className="text-gray-600 text-sm">Score: {user.leaseScore}/100</span>
         </div>
         <hr />
 

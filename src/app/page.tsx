@@ -2,14 +2,18 @@
 
 import { useAccount } from "wagmi"
 import DisconnectedHome from "@/components/disconnected";
-import ConnectedHome from "@/components/connected";
+import Profile from "@/components/profile"
+import Lease from "@/components/lease";
 
 export default function Home() {
   const { isConnected }  = useAccount();
 
   return (
     <>
-      {isConnected ? <ConnectedHome /> : <DisconnectedHome />}
+      {isConnected ? (<>
+        <Profile />
+        <Lease />
+      </>) : <DisconnectedHome />}
     </>
 
     )}

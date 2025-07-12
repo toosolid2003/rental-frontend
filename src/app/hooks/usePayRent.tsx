@@ -7,7 +7,7 @@ import Rental from "@/lib/Rental.json"
 
 export function usePayRent(contractAddress: Address, amountEth: string) {
   const { writeContractAsync } = useWriteContract();
-  const [txHash, setTxHash] = useState(null);
+  const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
 
   const payRent = async () => {
     const tx = await writeContractAsync({ 
@@ -17,10 +17,11 @@ export function usePayRent(contractAddress: Address, amountEth: string) {
         value: parseEther(amountEth),
      });
      
-    setTxHash(tx.hash);
+    setTxHash(tx);
   };
 
-  const txStatus = useTransaction({ hash: txHash });
+  const txStatus = useTransaction({ 
+    hash: txHash ?? undefined });
 
   return { payRent, txStatus };
 }

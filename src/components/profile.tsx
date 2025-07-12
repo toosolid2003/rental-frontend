@@ -18,7 +18,11 @@ function Profile()  {
          <Card className="bg-gradient-to-r from-blue-600 to-teal-500 text-white rounded-xl shadow-md">
            <CardContent className="flex flex-col justify-between p-4 space-y-3">
 
-             <ConnectButton showBalance={false} chainStatus="icon"/>
+             <div className="flex justify-between items-center ">
+              <ConnectButton showBalance={false} chainStatus="icon"/>
+              <img src="/verified.svg" alt="verified" className="w-6 h-6 invert"/>
+             </div>
+             
              <div className="text-s text-white/70 ml-1 mb-0.5 mt-8">Available Funds </div>
              <div className="flex flex-row items-end">
                {/* <div className="text-4xl font-bold">${user.balance}</div> */}
