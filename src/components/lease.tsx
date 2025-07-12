@@ -1,8 +1,18 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
+import { H1, H3 } from "./ui/typography"
+import { formatAddress } from "@/lib/utils";
+import { setAutomine } from "viem/actions";
+
 
 
 function Lease()    {
+
+  const [activeForm, setActiveForm] = useState(false);
+
+  const handleClick = async() => {
+    setActiveForm(true);
+  }
 
      const user = {
   username: "theDesignMojo",
@@ -18,7 +28,40 @@ function Lease()    {
     { date: "Oct, 5th", amount: 1400, status: "paid", color: "green" },
   ]
 
-  return(
+  if(activeForm)  {
+    return(
+      <>
+        <div className="flex-col justify-between mx-auto max-w-sm border-t border-b pb-4 pt-4">
+          <div className="flex flex-row justify-between pb-4">
+            <H3>Lease #1</H3>
+            <p className="text-right">1600 Pensylvania Ave NW <br/> Washington DC</p>
+          </div>
+          <div className="flex flex-row justify-between pb-4">
+            <H3>Rental Period</H3>
+            <p>October 2025</p>
+          </div>
+          <div className="flex flex-row justify-between pb-4">
+            <H3>Landlord Wallet</H3>
+            <p>{formatAddress("0x2232fdd2e02809d9a8e417AA95baD3558f03a7a7")}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center pt-8">
+          <p>Pay</p>
+          <H1>$1400</H1>
+          <div className="flex pt-4">
+            <Button className="mr-4" variant="outline">Cancel</Button>
+            <Button>Confirm</Button>
+
+          </div>
+
+        </div>
+
+      </>
+    );
+  }
+
+  return( 
     <div className="space-y-2 max-w-md mx-auto p-8">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Lease #1</h2>
@@ -50,16 +93,17 @@ function Lease()    {
                 />
               </div>
             ) : (
-              <Button className="bg-indigo-600 text-white rounded-xl px-6 py-2">
+              <Button className="bg-indigo-600 text-white rounded-xl px-6 py-2" onClick={handleClick}>
                 Pay
               </Button>
             )}
           </div>
         ))}
       </div>
-  )
-
+  );
 }
+
+
 
 export default Lease;
 
