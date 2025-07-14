@@ -8,6 +8,10 @@ import Rental from "@/lib/Rental.json"
 export function usePayRent(contractAddress: Address, amountEth: string) {
   const { writeContractAsync } = useWriteContract();
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
+  const {isPending, isSuccess, isError}  = useWaitForTransactionReceipt({
+    hash: txHash ?? undefined,
+    confirmations: 1,
+});
 
   const payRent = async () => {
     const tx = await writeContractAsync({ 
@@ -20,10 +24,6 @@ export function usePayRent(contractAddress: Address, amountEth: string) {
     setTxHash(tx);
   };
 
-  const {isPending, isSuccess, isError}  = useWaitForTransactionReceipt({
-    hash: txHash ?? undefined,
-    confirmations: 1,
-});
 
   return { payRent, txHash, isPending, isError, isSuccess };
 }

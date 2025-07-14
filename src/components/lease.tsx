@@ -7,9 +7,11 @@ import { setAutomine } from "viem/actions";
 import { toast } from "sonner";
 
 
-function Lease()    {
+function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const [activeForm, setActiveForm] = useState(false);
+  const [score, setScore] = useState(80);
+
   const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
   const { payRent, isSuccess } = usePayRent(contractAddress, "1400")
   const [payments, setPayments] = useState([
@@ -23,14 +25,18 @@ function Lease()    {
   useEffect(() => {
     if(isSuccess) {
         console.log("Success, BRO!!!!");
+        onPaymentSuccess();   // Notify parent component
 
         // Update the payments array
         const updated = [...payments];
         updated.shift(); // Remove the first element of the array
         updated.unshift({date: "Jan, 5th", amount: 1400, status: "paid", color: "green"});
         updated.unshift({date: "Feb, 5th", amount: 1400, status: "due"});
-        console.log(updated);
         setPayments(updated);
+
+        // Update the rental score
+        // setAnimate(true);
+        setScore(90);
 
         // Display the lease dashboard
         setActiveForm(false);
@@ -90,7 +96,7 @@ function Lease()    {
     <div className="space-y-2 max-w-md mx-auto p-8">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Lease #1</h2>
-          <span className="text-gray-600 text-sm">Score: 95/100</span>
+          <span className="text-gray-600 text-sm">Score: {score}/100</span>
         </div>
         <hr />
 
@@ -127,7 +133,6 @@ function Lease()    {
       </div>
   );
 }
-
 
 
 export default Lease;
