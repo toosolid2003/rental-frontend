@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useWriteContract, useTransaction } from "wagmi";
+import { useWriteContract, useTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther } from 'viem';
 import { Address } from 'viem';
 
@@ -20,8 +20,10 @@ export function usePayRent(contractAddress: Address, amountEth: string) {
     setTxHash(tx);
   };
 
-  const txStatus = useTransaction({ 
-    hash: txHash ?? undefined });
+  const {isPending, isSuccess, isError}  = useWaitForTransactionReceipt({
+    hash: txHash ?? undefined,
+    confirmations: 1,
+});
 
-  return { payRent, txStatus };
+  return { payRent, txHash, isPending, isError, isSuccess };
 }

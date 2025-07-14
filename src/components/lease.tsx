@@ -1,25 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { H1, H3 } from "./ui/typography"
 import { formatAddress } from "@/lib/utils";
+import { usePayRent } from "@/app/hooks/usePayRent";
 import { setAutomine } from "viem/actions";
-
+import { toast } from "sonner";
 
 
 function Lease()    {
 
   const [activeForm, setActiveForm] = useState(false);
+  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const { payRent, isSuccess } = usePayRent(contractAddress, "1400")
 
-  const handleClick = async() => {
-    setActiveForm(true);
+  useEffect(() => {
+    if(isSuccess) {
+        console.log("Success, BRO!!!!")
+        setActiveForm(false);
+        toast.success("Rent payment confirmed", {
+          description: "Your rent has been recorded onchain",
+          duration: 4000,
+        });
+      }
+    }, [isSuccess]);
+
+  const handleClick = async(flag: boolean) => {
+    setActiveForm(flag);
   }
 
-     const user = {
-  username: "theDesignMojo",
-  avatarUrl: null,
-  balance: 2450,
-  leaseScore: 95,
-  }
+  const handleConfirm = async() => {
+      payRent();
+  };
 
   const payments = [
     { date: "Jan, 5th", amount: 1400, status: "due" },
@@ -31,14 +42,14 @@ function Lease()    {
   if(activeForm)  {
     return(
       <>
-        <div className="flex-col justify-between mx-auto max-w-sm border-t border-b pb-4 pt-4">
+        <div className="flex-col justify-between mx-auto max-w-sm border-t border-b pb-8 pt-8">
           <div className="flex flex-row justify-between pb-4">
             <H3>Lease #1</H3>
             <p className="text-right">1600 Pensylvania Ave NW <br/> Washington DC</p>
           </div>
           <div className="flex flex-row justify-between pb-4">
             <H3>Rental Period</H3>
-            <p>October 2025</p>
+            <p>January 2025</p>
           </div>
           <div className="flex flex-row justify-between pb-4">
             <H3>Landlord Wallet</H3>
@@ -50,8 +61,8 @@ function Lease()    {
           <p>Pay</p>
           <H1>$1400</H1>
           <div className="flex pt-4">
-            <Button className="mr-4" variant="outline">Cancel</Button>
-            <Button>Confirm</Button>
+            <Button className="mr-4" variant="outline" onClick={() => handleClick(false)} >Cancel</Button>
+            <Button onClick={() => handleConfirm()}>Confirm</Button>
 
           </div>
 
@@ -65,7 +76,7 @@ function Lease()    {
     <div className="space-y-2 max-w-md mx-auto p-8">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Lease #1</h2>
-          <span className="text-gray-600 text-sm">Score: {user.leaseScore}/100</span>
+          <span className="text-gray-600 text-sm">Score: 95/100</span>
         </div>
         <hr />
 
@@ -93,7 +104,7 @@ function Lease()    {
                 />
               </div>
             ) : (
-              <Button className="bg-indigo-600 text-white rounded-xl px-6 py-2" onClick={handleClick}>
+              <Button className="bg-indigo-600 text-white rounded-xl px-6 py-2" onClick={() => handleClick(true)}>
                 Pay
               </Button>
             )}
