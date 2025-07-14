@@ -12,16 +12,35 @@ function Lease()    {
   const [activeForm, setActiveForm] = useState(false);
   const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
   const { payRent, isSuccess } = usePayRent(contractAddress, "1400")
+  const [payments, setPayments] = useState([
+    { date: "Jan, 5th", amount: 1400, status: "due" },
+    { date: "Dec, 5th", amount: 1400, status: "paid", color: "green" },
+    { date: "Nov, 10th", amount: 1400, status: "paid", color: "orange" },
+    { date: "Oct, 5th", amount: 1400, status: "paid", color: "green" },
+  ]);
+
 
   useEffect(() => {
     if(isSuccess) {
-        console.log("Success, BRO!!!!")
+        console.log("Success, BRO!!!!");
+
+        // Update the payments array
+        const updated = [...payments];
+        updated.shift(); // Remove the first element of the array
+        updated.unshift({date: "Jan, 5th", amount: 1400, status: "paid", color: "green"});
+        updated.unshift({date: "Feb, 5th", amount: 1400, status: "due"});
+        console.log(updated);
+        setPayments(updated);
+
+        // Display the lease dashboard
         setActiveForm(false);
         toast.success("Rent payment confirmed", {
-          description: "Your rent has been recorded onchain",
+          description: "Your rent has been paid and recorded onchain",
           duration: 4000,
         });
       }
+
+
     }, [isSuccess]);
 
   const handleClick = async(flag: boolean) => {
@@ -32,12 +51,7 @@ function Lease()    {
       payRent();
   };
 
-  const payments = [
-    { date: "Jan, 5th", amount: 1400, status: "due" },
-    { date: "Dec, 5th", amount: 1400, status: "paid", color: "green" },
-    { date: "Nov, 10th", amount: 1400, status: "paid", color: "orange" },
-    { date: "Oct, 5th", amount: 1400, status: "paid", color: "green" },
-  ]
+
 
   if(activeForm)  {
     return(
