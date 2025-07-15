@@ -3,17 +3,21 @@ import { Button } from "./ui/button";
 import { H1, H3 } from "./ui/typography"
 import { formatAddress } from "@/lib/utils";
 import { usePayRent } from "@/app/hooks/usePayRent";
-import { setAutomine } from "viem/actions";
+import { Address } from 'viem';
 import { toast } from "sonner";
+import { useRentalInfo } from "@/app/hooks/useRentalInfo";
 
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const [activeForm, setActiveForm] = useState(false);
-  const [score, setScore] = useState(80);
 
-  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
+
   const { payRent, isSuccess } = usePayRent(contractAddress, "1400")
+  const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading } = useRentalInfo();
+  
+  
   const [payments, setPayments] = useState([
     { date: "Jan, 5th", amount: 1400, status: "due" },
     { date: "Dec, 5th", amount: 1400, status: "paid", color: "green" },
@@ -36,7 +40,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
         // Update the rental score
         // setAnimate(true);
-        setScore(90);
+
 
         // Display the lease dashboard
         setActiveForm(false);
@@ -96,7 +100,8 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
     <div className="space-y-2 max-w-md mx-auto p-8">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Lease #1</h2>
-          <span className="text-gray-600 text-sm">Score: {score}/100</span>
+          <span className="text-gray-600 text-sm">Score: {rentAmountLoading ? 
+            (<span className="text-gray-500"/>) : (<span>{rentalScore?.toString()}</span>)}/100</span>
         </div>
         <hr />
 
@@ -108,7 +113,9 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
             <div>
               <div className="text-sm text-gray-600">{p.date}</div>
               <div className="flex flex-row items-end">
-                <div className="text-3xl font-semibold">${p.amount}</div>
+                <div className="text-3xl font-semibold">${rentAmountLoading ? (
+                  <span className="text-gray-500">Loading...</span>
+                ) : (<span className="text-black-500">{rentAmount?.toString()}</span>)}</div>
                 <div className="text-xs text-gray-500 mb-0.5 ml-1">USD</div>
               </div>
             </div>

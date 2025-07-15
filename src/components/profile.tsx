@@ -3,18 +3,23 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance,useEnsName } from "wagmi";
 
-function Profile({ paymentSuccess, onRefetch }: {paymentSuccess: boolean, onRefetch: () => void})  {
 
+function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
+
+  // Generic hooks
   const { address }  = useAccount();
   const { data: ensName, isLoading, isError } = useEnsName({ address });
-  // const { data: ensAvatar } = useEnsAvatar( { name: ensName});
+
+  // Custom or Wagmi hooks
   const fallbackUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`;
-  const { data, refetch } = useBalance({ address });
+  const { data } = useBalance({ address });
+
+
+  // useEffect hook
 
   useEffect(() => {
     if(paymentSuccess)  {
       console.log("Payment updated");
-      refetch();
     }
   }, [paymentSuccess]);
 

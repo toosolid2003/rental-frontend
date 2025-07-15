@@ -13,8 +13,7 @@ export default function Home() {
   return (
     <>
       {isConnected ? (<>
-        <Profile paymentSuccess={paymentSuccess}
-                onRefetch={() => setPaymentSuccess(false)}/>
+        <Profile paymentSuccess={paymentSuccess}/>
         <Lease onPaymentSuccess={() => setPaymentSuccess(true)} />
       </>) : <DisconnectedHome />}
     </>
