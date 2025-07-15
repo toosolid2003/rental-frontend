@@ -8,11 +8,10 @@ function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
 
   // Generic hooks
   const { address }  = useAccount();
-  const { data: ensName, isLoading, isError } = useEnsName({ address });
 
   // Custom or Wagmi hooks
   const fallbackUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`;
-  const { data } = useBalance({ address });
+  const { data: balance, refetch, isLoading } = useBalance({ address: address ?? undefined  });
 
 
   // useEffect hook
@@ -20,6 +19,7 @@ function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
   useEffect(() => {
     if(paymentSuccess)  {
       console.log("Payment updated");
+      refetch();
     }
   }, [paymentSuccess]);
 
@@ -38,7 +38,7 @@ function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
              <div className="flex flex-row items-end">
                {/* <div className="text-4xl font-bold">${user.balance}</div> */}
                <div className="text-4xl font-bold">{
-                   isLoading ? "Loading balance" : Number(data?.formatted).toFixed(1)
+                   isLoading ? "Loading balance" : Number(balance?.formatted).toFixed(1)
                  }</div>
                <div className="text-xs text-white/70 ml-1 mb-0.5">{
                  isLoading ? "" : "USD"
