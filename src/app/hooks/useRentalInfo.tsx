@@ -1,7 +1,7 @@
-import {useReadContract, useAccount} from 'wagmi'
-import { Address, formatEther } from 'viem'
-import Rental from "@/lib/Rental.json"
-import { parse } from 'path';
+import {useReadContract, useAccount} from 'wagmi';
+import { Address, formatEther } from 'viem';
+import Rental from "@/lib/Rental.json";
+
 
 export const useRentalInfo = () => {
 
@@ -24,6 +24,7 @@ export const useRentalInfo = () => {
         account: address,
     })
 
+
     console.log("Score error:", scoreRead.error);
     console.log("Rent error:", rentRead.error);
 
@@ -36,6 +37,7 @@ export const useRentalInfo = () => {
         rentalScoreLoading: scoreRead.isLoading,
         rentAmount: rent,
         rentAmountLoading: rentRead.isLoading,
+        refetchScore: scoreRead.refetch,
     }
 
 }

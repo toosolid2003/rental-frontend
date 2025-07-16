@@ -15,7 +15,9 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
 
   const { payRent, isSuccess } = usePayRent(contractAddress, "1400")
-  const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading } = useRentalInfo();
+  const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, refetchScore } = useRentalInfo();
+  const [localScore, setLocalScore] = useState<number | undefined>();
+  const [animateScore, setAnimateScore] = useState(false);
   
   
   const [payments, setPayments] = useState([
@@ -40,6 +42,17 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
         // Update the rental score
         // setAnimate(true);
+        if (isSuccess) {
+          refetchScore().then((res)  =>  {
+            console.log("upodate score", res.data);
+            if(res.data)  {
+               setLocalScore(Number(res.data));
+               setAnimateScore(true);
+               setTimeout(() => setAnimateScore(false), 500);
+            }
+          });
+        }
+       
 
 
         // Display the lease dashboard
@@ -83,7 +96,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
         <div className="flex flex-col items-center pt-8">
           <p>Pay</p>
-          <H1>$1400</H1>
+          <H1>${rentAmount?.toString()}</H1>
           <div className="flex pt-4">
             <Button className="mr-4" variant="outline" onClick={() => handleClick(false)} >Cancel</Button>
             <Button onClick={() => handleConfirm()}>Confirm</Button>
@@ -100,8 +113,11 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
     <div className="space-y-2 max-w-md mx-auto p-8">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Lease #1</h2>
-          <span className="text-gray-600 text-sm">Score: {rentAmountLoading ? 
-            (<span className="text-gray-500"/>) : (<span>{rentalScore?.toString()}</span>)}/100</span>
+          <span className="text-gray-600 text-sm">Score: {rentalScoreLoading ?   
+            (<span className="text-gray-500">Loading...</span>) : 
+            (<span className={`transition-transform duration-300 ease-out inline-block ${animateScore ? "scale-120 text-indigo-600" : "scale-100"} `}>
+              {localScore ?? rentalScore as number}/100</span>)}
+              </span>
         </div>
         <hr />
 

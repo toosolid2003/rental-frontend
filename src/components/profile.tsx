@@ -30,7 +30,7 @@ function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
            <CardContent className="flex flex-col justify-between p-4 space-y-3">
 
              <div className="flex justify-between items-center ">
-              <ConnectButton showBalance={false} chainStatus="icon"/>
+              <ConnectButton showBalance={false} chainStatus="none"/>
               <img src="/verified.svg" alt="verified" className="w-6 h-6 invert"/>
              </div>
              
