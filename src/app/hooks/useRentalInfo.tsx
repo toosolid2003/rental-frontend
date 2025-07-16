@@ -24,9 +24,17 @@ export const useRentalInfo = () => {
         account: address,
     })
 
+    const landRead  = useReadContract({
+        abi: Rental.abi,
+        address: contractAddress,
+        functionName: "getLandlord",
+        account: address,
+    })
+
 
     console.log("Score error:", scoreRead.error);
     console.log("Rent error:", rentRead.error);
+    console.log("Landlord error:", landRead.error);
 
     const rent = typeof rentRead.data === "bigint"
         ? Number(formatEther(rentRead.data))
@@ -37,6 +45,7 @@ export const useRentalInfo = () => {
         rentalScoreLoading: scoreRead.isLoading,
         rentAmount: rent,
         rentAmountLoading: rentRead.isLoading,
+        landlord: landRead.data,
         refetchScore: scoreRead.refetch,
     }
 

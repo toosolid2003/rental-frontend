@@ -15,7 +15,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
 
   const { payRent, isSuccess } = usePayRent(contractAddress, "1400")
-  const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, refetchScore } = useRentalInfo();
+  const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, landlord, refetchScore } = useRentalInfo();
   const [localScore, setLocalScore] = useState<number | undefined>();
   const [animateScore, setAnimateScore] = useState(false);
   
@@ -90,7 +90,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
           </div>
           <div className="flex flex-row justify-between pb-4">
             <H3>Landlord Wallet</H3>
-            <p>{formatAddress("0x2232fdd2e02809d9a8e417AA95baD3558f03a7a7")}</p>
+            <p>{landlord ? formatAddress(landlord as Address):("Loading...")}</p>
           </div>
         </div>
 
