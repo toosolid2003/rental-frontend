@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card"
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useBalance,useEnsName } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 
 
 function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {

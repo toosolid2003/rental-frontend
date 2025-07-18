@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useWriteContract, useTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther } from 'viem';
 import { Address } from 'viem';
 
