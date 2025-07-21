@@ -14,6 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+
+
 export const metadata: Metadata = {
   title: "Rental Scoring",
   description: "Your Web3 rental reputation system",
