@@ -6,6 +6,9 @@ import { usePayRent } from "@/app/hooks/usePayRent";
 import { Address } from 'viem';
 import { toast } from "sonner";
 import { useRentalInfo } from "@/app/hooks/useRentalInfo";
+import { useEasAttestation }  from "@/app/hooks/useEas";
+import { useAccount } from "wagmi";
+
 
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
@@ -14,43 +17,49 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
 
-  const { payRent, isSuccess } = usePayRent(contractAddress, "1400")
+  const { payRent, isSuccess } = usePayRent(contractAddress, "1400");
+  const { sendAttestation } = useEasAttestation();
   const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, landlord, refetchScore } = useRentalInfo();
   const [localScore, setLocalScore] = useState<number | undefined>();
   const [animateScore, setAnimateScore] = useState(false);
-  
+  const { address } = useAccount();
   
   const [payments, setPayments] = useState([
-    { date: "Jan, 5th", amount: 1400, status: "due" },
-    { date: "Dec, 5th", amount: 1400, status: "paid", color: "green" },
-    { date: "Nov, 10th", amount: 1400, status: "paid", color: "orange" },
-    { date: "Oct, 5th", amount: 1400, status: "paid", color: "green" },
+    { date: "01-2025", amount: 1400, status: "due" },
+    { date: "12-2024", amount: 1400, status: "paid", color: "green" },
+    { date: "11-2024", amount: 1400, status: "paid", color: "orange" },
+    { date: "10-2024", amount: 1400, status: "paid", color: "green" },
   ]);
 
 
   useEffect(() => {
     if(isSuccess) {
+
         console.log("Success, BRO!!!!");
         onPaymentSuccess();   // Notify parent component
 
         // Update the payments array
         const updated = [...payments];
         updated.shift(); // Remove the first element of the array
-        updated.unshift({date: "Jan, 5th", amount: 1400, status: "paid", color: "green"});
-        updated.unshift({date: "Feb, 5th", amount: 1400, status: "due"});
+        updated.unshift({date: "01-2025", amount: 1400, status: "paid", color: "green"});
+        updated.unshift({date: "02-2025", amount: 1400, status: "due"});
         setPayments(updated);
 
         // Update the rental score
         // setAnimate(true);
         if (isSuccess) {
           refetchScore().then((res)  =>  {
-            console.log("upodate score", res.data);
+            console.log("update score", res.data);
             if(res.data)  {
                setLocalScore(Number(res.data));
                setAnimateScore(true);
                setTimeout(() => setAnimateScore(false), 500);
             }
           });
+
+          // Generate and send the attestation
+          // TODO: turn hardcoded data into parameters
+          sendAttestation("1400", true, "07-2025", address ?? "0x00");
         }
        
 
