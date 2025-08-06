@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useRentalInfo } from "@/app/hooks/useRentalInfo";
 import { useEasAttestation }  from "@/app/hooks/useEas";
 import { useAccount } from "wagmi";
+import { addPayment } from "./prisma";
 
 
 
@@ -35,7 +36,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   useEffect(() => {
     if(isSuccess) {
 
-        console.log("Success, BRO!!!!");
+        console.log("Payment is successful.");
         onPaymentSuccess();   // Notify parent component
 
         // Update the payments array
@@ -44,6 +45,17 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
         updated.unshift({date: "01-2025", amount: 1400, status: "paid", color: "green"});
         updated.unshift({date: "02-2025", amount: 1400, status: "due"});
         setPayments(updated);
+
+        // Create attestation and send payment to DB
+        if(address !== undefined && rentAmount !== undefined) {
+          const attestId = await sendAttestation(String(rentAmount), true, "07-2025", address);
+          await addPayment(contractAddress, address, rentAmount, new Date(Date.now()), "paid", attestId);
+          console.log("[*] Payment added to the database")
+          
+        }
+        else  {
+          console.log("[x] Payment NOT added to the DB")
+        }
 
         // Update the rental score
         // setAnimate(true);
@@ -57,9 +69,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
             }
           });
 
-          // Generate and send the attestation
-          // TODO: turn hardcoded data into parameters
-          sendAttestation("1400", true, "07-2025", address ?? "0x00");
+
         }
        
 
