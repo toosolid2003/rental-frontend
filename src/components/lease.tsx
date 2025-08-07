@@ -9,7 +9,7 @@ import { useRentalInfo } from "@/app/hooks/useRentalInfo";
 import { useEasAttestation }  from "@/app/hooks/useEas";
 import { useAccount } from "wagmi";
 import { addPayment } from "./prisma";
-
+import { toMonthYear } from "@/lib/utils";
 
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
@@ -47,15 +47,19 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
         setPayments(updated);
 
         // Create attestation and send payment to DB
-        if(address !== undefined && rentAmount !== undefined) {
-          const attestId = await sendAttestation(String(rentAmount), true, "07-2025", address);
-          await addPayment(contractAddress, address, rentAmount, new Date(Date.now()), "paid", attestId);
-          console.log("[*] Payment added to the database")
-          
-        }
-        else  {
-          console.log("[x] Payment NOT added to the DB")
-        }
+        const handleConfirmation = async () => {
+          if(address !== undefined && rentAmount !== undefined) {
+            const today = new Date(Date.now());
+            const attestId = await sendAttestation(String(rentAmount), true, toMonthYear(today), address);
+            await addPayment(contractAddress, address, rentAmount, today, "paid", attestId);
+            console.log("[*] Payment added to the database")
+          }
+          else  {
+            console.log("[x] Not enough data available to record the payment in the db")
+          }
+        };
+        handleConfirmation();
+
 
         // Update the rental score
         // setAnimate(true);
@@ -74,7 +78,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
        
 
 
-        // Display the lease dashboard
+        // Display the lease dashboard again and show a toaster
         setActiveForm(false);
         toast.success("Rent payment confirmed", {
           description: "Your rent has been paid and recorded onchain",

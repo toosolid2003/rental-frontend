@@ -18,3 +18,9 @@ export function toEpoch(raw_date: string)  {
 
   return epoch;
 }
+
+export function toMonthYear(raw: Date)  {
+  const month = String(raw.getMonth() + 1).padStart(2, '0');
+  const year = raw.getFullYear();
+  return `${month}-${year}`;
+}

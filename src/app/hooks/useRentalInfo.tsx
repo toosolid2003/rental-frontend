@@ -32,6 +32,13 @@ export const useRentalInfo = () => {
         account: address,
     })
 
+    // Retrive payDate
+    const payDateRead = useReadContract({
+        abi: Rental.abi,
+        address: contractAddress,
+        functionName: "payDate",
+        account: address,
+    })
 
     console.log("Score error:", scoreRead.error);
     console.log("Rent error:", rentRead.error);
@@ -47,6 +54,7 @@ export const useRentalInfo = () => {
         rentAmount: rent,
         rentAmountLoading: rentRead.isLoading,
         landlord: landRead.data,
+        payDate: payDateRead.data,
         refetchScore: scoreRead.refetch,
     }
 
