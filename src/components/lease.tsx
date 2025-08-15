@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { useRentalInfo } from "@/app/hooks/useRentalInfo";
 import { useEasAttestation }  from "@/app/hooks/useEas";
 import { useAccount } from "wagmi";
-import { addPayment } from "./prisma";
 import { toMonthYear } from "@/lib/utils";
+import { useWatchRent } from "@/app/hooks/usePaymentEvents";
 
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
@@ -24,7 +24,8 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   const [localScore, setLocalScore] = useState<number | undefined>();
   const [animateScore, setAnimateScore] = useState(false);
   const { address } = useAccount();
-  
+  const onTime = useWatchRent(contractAddress);
+
   const [payments, setPayments] = useState([
     { date: "01-2025", amount: 1400, status: "due" },
     { date: "12-2024", amount: 1400, status: "paid", color: "green" },
@@ -32,6 +33,17 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
     { date: "10-2024", amount: 1400, status: "paid", color: "green" },
   ]);
 
+  // Manage the retrieval of the payment history from the db
+  
+  // const [payments, setPayments] = useState<any[]>([]);
+  // const fetchPayments = async () => {
+  //   const latest = await getPayments(contractAddress);
+  //   setPayments(latest);
+  // }
+    // Launch the function on mount
+  // useEffect(() => {
+  //   fetchPayments();
+  // }, []);
 
   useEffect(() => {
     if(isSuccess) {
@@ -40,29 +52,33 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
         onPaymentSuccess();   // Notify parent component
 
         // Update the payments array
+        // TODO: update the payment array with the history of events pulled from the contract
+
         const updated = [...payments];
         updated.shift(); // Remove the first element of the array
         updated.unshift({date: "01-2025", amount: 1400, status: "paid", color: "green"});
         updated.unshift({date: "02-2025", amount: 1400, status: "due"});
         setPayments(updated);
 
-        // Create attestation and send payment to DB
+        // Create attestation and record it on the contract
         const handleConfirmation = async () => {
           if(address !== undefined && rentAmount !== undefined) {
             const today = new Date(Date.now());
-            const attestId = await sendAttestation(String(rentAmount), true, toMonthYear(today), address);
-            await addPayment(contractAddress, address, rentAmount, today, "paid", attestId);
-            console.log("[*] Payment added to the database")
+            
+            if (onTime !== null)  {
+              const attestId = await sendAttestation(String(rentAmount), onTime , toMonthYear(today), address)
+              // TODO: write the attestation id into the contract
+            }
+            console.log("[*] Payment recorded, attestation id stored in contract")
           }
           else  {
-            console.log("[x] Not enough data available to record the payment in the db")
+            console.log("[x] Not enough data available to record the payment.")
           }
         };
         handleConfirmation();
 
 
         // Update the rental score
-        // setAnimate(true);
         if (isSuccess) {
           refetchScore().then((res)  =>  {
             console.log("update score", res.data);
@@ -155,7 +171,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
                 <div className="text-3xl font-semibold">${rentAmountLoading ? (
                   <span className="text-gray-500">Loading...</span>
                 ) : (<span className="text-black-500">{rentAmount?.toString()}</span>)}</div>
-                <div className="text-xs text-gray-500 mb-0.5 ml-1">USD</div>
+                <div className="text-xs text-gray-500 mb-0.5 ml-1">ETH</div>
               </div>
             </div>
             {p.status === "paid" ? (
