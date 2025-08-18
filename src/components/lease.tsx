@@ -52,7 +52,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
         onPaymentSuccess();   // Notify parent component
 
         // Update the payments array
-        // TODO: update the payment array with the history of events pulled from the contract
+        // TODO: update the payment array with the history of events pulled from the EAS
 
         const updated = [...payments];
         updated.shift(); // Remove the first element of the array
@@ -60,22 +60,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
         updated.unshift({date: "02-2025", amount: 1400, status: "due"});
         setPayments(updated);
 
-        // Create attestation and record it on the contract
-        const handleConfirmation = async () => {
-          if(address !== undefined && rentAmount !== undefined) {
-            const today = new Date(Date.now());
-            
-            if (onTime !== null)  {
-              const attestId = await sendAttestation(String(rentAmount), onTime , toMonthYear(today), address)
-              // TODO: write the attestation id into the contract
-            }
-            console.log("[*] Payment recorded, attestation id stored in contract")
-          }
-          else  {
-            console.log("[x] Not enough data available to record the payment.")
-          }
-        };
-        handleConfirmation();
+
 
 
         // Update the rental score
@@ -88,12 +73,8 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
                setTimeout(() => setAnimateScore(false), 500);
             }
           });
-
-
         }
        
-
-
         // Display the lease dashboard again and show a toaster
         setActiveForm(false);
         toast.success("Rent payment confirmed", {
@@ -111,6 +92,19 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const handleConfirm = async() => {
       payRent();
+      
+      // Create attestation and record it on the contract
+      if(address !== undefined && rentAmount !== undefined) {
+        const today = new Date(Date.now());
+        
+        if (onTime !== null)  {
+          const attestId = await sendAttestation(String(rentAmount), onTime , toMonthYear(today), address)
+        }
+        console.log(`[*] Payment recorded, attestation id generated`)
+      }
+      else  {
+        console.log("[x] Not enough data available to record the payment.")
+      }
   };
 
 

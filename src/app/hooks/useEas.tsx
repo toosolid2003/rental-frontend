@@ -58,8 +58,105 @@ export const useEasAttestation = () => {
     return uid;
   };
 
+
+
+
+ const getPaymentDetails = async (attestationId: string) => {
+  if (!eas) throw new Error("EAS not initialized");
+  // Fetch from subgraph by ID
+  const query = `
+    {
+      attestation(id: "${attestationId}") {
+        id
+        data
+        time
+      }
+    }
+  `;
+  const response = await fetch("https://sepolia.easscan.org/graphql", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  });
+  const { data } = await response.json();
+  if (!data?.attestation) return null;
+
+  const decoded = new SchemaEncoder("address tenant, uint64 amount, bool on_time, uint256 month_year").decodeData(data.attestation.data);
+  return Object.fromEntries(decoded.map((f: any) => [f.name, f.value]));
+};
+
+
+
+
+ const getRecentAttestationsByTenant = async (tenant: Address) => {
+  if (!eas) throw new Error("EAS not initialized");
+  if (!tenant) throw new Error("Tenant address is required");
+
+  try {
+    // GraphQL query to fetch the latest 20 attestations (filtering by recipient)
+    const query = `
+      {
+        attestations(
+          where: { recipient: "${tenant.toLowerCase()}", schemaId: "${schemaUID}" }
+          orderBy: time
+          orderDirection: desc
+          first: 20
+        ) {
+          id
+          data
+          time
+        }
+      }
+    `;
+
+    const response = await fetch("https://sepolia.easscan.org/graphql", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query }),
+    });
+
+    const { data } = await response.json();
+    if (!data?.attestations || !Array.isArray(data.attestations)) return [];
+
+    const encoder = new SchemaEncoder("address tenant, uint64 amount, bool on_time, uint256 month_year");
+
+    // Decode each attestation safely
+    const decoded = data.attestations
+      .map((att: any) => {
+        try {
+          const decodedData = encoder.decodeData(att.data);
+          const payment: any = Object.fromEntries(decodedData.map((f: any) => [f.name, f.value]));
+          return {
+            id: att.id,
+            tenant: payment.tenant,
+            amount: payment.amount,
+            on_time: payment.on_time,
+            month_year: Number(payment.month_year),
+            time: Number(att.time),
+          };
+        } catch (err) {
+          console.warn("Failed to decode attestation:", att.id, err);
+          return null;
+        }
+      })
+      .filter((att: any) => att !== null);
+
+    // Sort by month_year descending and take the 5 most recent
+    const recentPayments = decoded
+      .sort((a: any, b: any) => b.month_year - a.month_year)
+      .slice(0, 5);
+
+    return recentPayments;
+  } catch (err) {
+    console.error("Error fetching attestations:", err);
+    return [];
+  }
+}; 
+
   return {
     eas,
     sendAttestation,
+    getPaymentDetails,
+    getRecentAttestationsByTenant,
   };
 };
