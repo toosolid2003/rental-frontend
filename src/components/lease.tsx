@@ -10,6 +10,7 @@ import { useEasAttestation }  from "@/app/hooks/useEas";
 import { useAccount } from "wagmi";
 import { toMonthYear } from "@/lib/utils";
 import { useWatchRent } from "@/app/hooks/usePaymentEvents";
+import { useRouter } from "next/navigation";
 
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
@@ -25,12 +26,13 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   const [animateScore, setAnimateScore] = useState(false);
   const { address } = useAccount();
   const onTime = useWatchRent(contractAddress);
+  const router = useRouter();
 
   const [payments, setPayments] = useState([
     { date: "01-2025", amount: 1400, status: "due" },
-    { date: "12-2024", amount: 1400, status: "paid", color: "green" },
-    { date: "11-2024", amount: 1400, status: "paid", color: "orange" },
-    { date: "10-2024", amount: 1400, status: "paid", color: "green" },
+    { date: "12-2024", amount: 1400, status: "paid", color: "green", attestationId: "attest1234" },
+    { date: "11-2024", amount: 1400, status: "paid", color: "orange", attestationId: "attest5678" },
+    { date: "10-2024", amount: 1400, status: "paid", color: "green", attestationId: "attest9101" },
   ]);
 
   // Manage the retrieval of the payment history from the db
@@ -46,45 +48,56 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   // }, []);
 
   useEffect(() => {
-    if(isSuccess) {
-
+    if (isSuccess) {
+      const handlePaymentSuccess = async () => {
         console.log("Payment is successful.");
         onPaymentSuccess();   // Notify parent component
+        let attestId: string | null = null;
+
+        // Create attestation and record it on the contract
+        if (address !== undefined && rentAmount !== undefined) {
+          const today = new Date(Date.now());
+
+          if (onTime !== null) {
+            const attestId = await sendAttestation(String(rentAmount), onTime, toMonthYear(today), address);
+          }
+          console.log(`[*] Payment recorded, attestation id generated`);
+        } else {
+          console.log("[x] Did not receive the onTime boolean from the RentPaid event.");
+        }
 
         // Update the payments array
         // TODO: update the payment array with the history of events pulled from the EAS
 
         const updated = [...payments];
         updated.shift(); // Remove the first element of the array
-        updated.unshift({date: "01-2025", amount: 1400, status: "paid", color: "green"});
-        updated.unshift({date: "02-2025", amount: 1400, status: "due"});
+        updated.unshift({ date: "01-2025", amount: 1400, status: "paid", color: "green", attestationId: attestId || "pending" });
+        updated.unshift({ date: "02-2025", amount: 1400, status: "due" });
         setPayments(updated);
-
-
-
 
         // Update the rental score
         if (isSuccess) {
-          refetchScore().then((res)  =>  {
+          refetchScore().then((res) => {
             console.log("update score", res.data);
-            if(res.data)  {
-               setLocalScore(Number(res.data));
-               setAnimateScore(true);
-               setTimeout(() => setAnimateScore(false), 500);
+            if (res.data) {
+              setLocalScore(Number(res.data));
+              setAnimateScore(true);
+              setTimeout(() => setAnimateScore(false), 500);
             }
           });
         }
-       
+
         // Display the lease dashboard again and show a toaster
         setActiveForm(false);
         toast.success("Rent payment confirmed", {
           description: "Your rent has been paid and recorded onchain",
           duration: 4000,
         });
-      }
+      };
 
-
-    }, [isSuccess]);
+      handlePaymentSuccess();
+    }
+  }, [isSuccess]);
 
   const handleClick = async(flag: boolean) => {
     setActiveForm(flag);
@@ -93,18 +106,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   const handleConfirm = async() => {
       payRent();
       
-      // Create attestation and record it on the contract
-      if(address !== undefined && rentAmount !== undefined) {
-        const today = new Date(Date.now());
-        
-        if (onTime !== null)  {
-          const attestId = await sendAttestation(String(rentAmount), onTime , toMonthYear(today), address)
-        }
-        console.log(`[*] Payment recorded, attestation id generated`)
-      }
-      else  {
-        console.log("[x] Not enough data available to record the payment.")
-      }
+
   };
 
 
@@ -149,7 +151,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
           <span className="text-gray-600 text-sm">Score: {rentalScoreLoading ?   
             (<span className="text-gray-500">Loading...</span>) : 
             (<span className={`transition-transform duration-300 ease-out inline-block ${animateScore ? "scale-120 text-indigo-600" : "scale-100"} `}>
-              {localScore ?? rentalScore as number}/100</span>)}
+              {localScore ?? rentalScore as number}</span>)}
               </span>
         </div>
         <hr />
@@ -157,7 +159,12 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
         {payments.map((p, i) => (
           <div
             key={i}
-            className="flex justify-between items-center border-b pb-3 pt-3"
+            className={`flex justify-between items-center border-b pb-3 pt-3 ${p.status === "paid" ? "cursor-pointer hover:bg-gray-50" : ""}`}
+            onClick={() => {
+              if (p.status === "paid" && p.attestationId) {
+                router.push(`/payments/${p.attestationId}`);
+              }
+            }}
           >
             <div>
               <div className="text-sm text-gray-600">{p.date}</div>
