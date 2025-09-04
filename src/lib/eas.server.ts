@@ -14,15 +14,19 @@ interface AttestationResponse {
 
 export async function getPaymentDetails(attestationId: string) {
   const query = gql`
-    query GetAttestation($id: ID!) {
-      attestation(where: { id: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" }) {
+    query GetAttestation($where: AttestationWhereUniqueInput!) {
+      attestation(where: $where) {
         id
         data
+        attester
+        recipient
+        time
+        txid
       }
     }
   `;
 
-  const variables = { id: attestationId };
+  const variables = { where : { id: attestationId } };
 
   const response = await request<AttestationResponse>(EAS_GRAPHQL_URL, query, variables);
 

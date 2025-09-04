@@ -33,9 +33,9 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const [payments, setPayments] = useState([
     { date: "09-2025", amount: 0.01, status: "due" },
-    { date: "08-2025", amount: 0.01, status: "paid", color: "green", attestationId: "0x31d729926a7cef8d5b91f428c0653db95f80723dd000632e747c926a063bf81d" },
-    { date: "07-2025", amount: 0.01, status: "paid", color: "orange", attestationId: "0x31d729926a7cef8d5b91f428c0653db95f80723dd000632e747c926a063bf81d" },
-    { date: "06-2025", amount: 0.01, status: "paid", color: "green", attestationId: "0x31d729926a7cef8d5b91f428c0653db95f80723dd000632e747c926a063bf81d" },
+    { date: "08-2025", amount: 0.01, status: "paid", color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
+    { date: "07-2025", amount: 0.01, status: "paid", color: "orange", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
+    { date: "06-2025", amount: 0.01, status: "paid", color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
   ]);
 
 

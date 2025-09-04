@@ -1,10 +1,7 @@
-"use client"
-
 import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card"
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance } from "wagmi";
-import EasTester from "./eas_tester";
 
 
 function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
