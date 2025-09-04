@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { H1, H3 } from "./ui/typography"
@@ -11,6 +13,7 @@ import { useAccount } from "wagmi";
 import { toMonthYear } from "@/lib/utils";
 import { useWatchRent } from "@/app/hooks/usePaymentEvents";
 import { useRouter } from "next/navigation";
+import { parseEther } from "viem";
 
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
@@ -19,8 +22,8 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
 
-  const { payRent, isSuccess } = usePayRent(contractAddress, "1400");
-  const { sendAttestation } = useEasAttestation();
+  const { payRent, isSuccess } = usePayRent(contractAddress, "0.01");
+  const { eas, sendAttestation } = useEasAttestation();
   const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, landlord, refetchScore } = useRentalInfo();
   const [localScore, setLocalScore] = useState<number | undefined>();
   const [animateScore, setAnimateScore] = useState(false);
@@ -29,85 +32,99 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   const router = useRouter();
 
   const [payments, setPayments] = useState([
-    { date: "01-2025", amount: 1400, status: "due" },
-    { date: "12-2024", amount: 1400, status: "paid", color: "green", attestationId: "attest1234" },
-    { date: "11-2024", amount: 1400, status: "paid", color: "orange", attestationId: "attest5678" },
-    { date: "10-2024", amount: 1400, status: "paid", color: "green", attestationId: "attest9101" },
+    { date: "09-2025", amount: 0.01, status: "due" },
+    { date: "08-2025", amount: 0.01, status: "paid", color: "green", attestationId: "0x31d729926a7cef8d5b91f428c0653db95f80723dd000632e747c926a063bf81d" },
+    { date: "07-2025", amount: 0.01, status: "paid", color: "orange", attestationId: "0x31d729926a7cef8d5b91f428c0653db95f80723dd000632e747c926a063bf81d" },
+    { date: "06-2025", amount: 0.01, status: "paid", color: "green", attestationId: "0x31d729926a7cef8d5b91f428c0653db95f80723dd000632e747c926a063bf81d" },
   ]);
 
-  // Manage the retrieval of the payment history from the db
-  
-  // const [payments, setPayments] = useState<any[]>([]);
-  // const fetchPayments = async () => {
-  //   const latest = await getPayments(contractAddress);
-  //   setPayments(latest);
-  // }
-    // Launch the function on mount
-  // useEffect(() => {
-  //   fetchPayments();
-  // }, []);
 
-  useEffect(() => {
-    if (isSuccess) {
-      const handlePaymentSuccess = async () => {
-        console.log("Payment is successful.");
-        onPaymentSuccess();   // Notify parent component
-        let attestId: string | null = null;
+// ---- Handle payment + attestation
+const handlePaymentSuccess = async () => {
+  console.log("Payment is successful.");
+  onPaymentSuccess(); // Notify parent component
 
-        // Create attestation and record it on the contract
-        if (address !== undefined && rentAmount !== undefined) {
-          const today = new Date(Date.now());
+  let attestId: string | null = null;
 
-          if (onTime !== null) {
-            const attestId = await sendAttestation(String(rentAmount), onTime, toMonthYear(today), address);
-          }
-          console.log(`[*] Payment recorded, attestation id generated`);
-        } else {
-          console.log("[x] Did not receive the onTime boolean from the RentPaid event.");
-        }
-
-        // Update the payments array
-        // TODO: update the payment array with the history of events pulled from the EAS
-
-        const updated = [...payments];
-        updated.shift(); // Remove the first element of the array
-        updated.unshift({ date: "01-2025", amount: 1400, status: "paid", color: "green", attestationId: attestId || "pending" });
-        updated.unshift({ date: "02-2025", amount: 1400, status: "due" });
-        setPayments(updated);
-
-        // Update the rental score
-        if (isSuccess) {
-          refetchScore().then((res) => {
-            console.log("update score", res.data);
-            if (res.data) {
-              setLocalScore(Number(res.data));
-              setAnimateScore(true);
-              setTimeout(() => setAnimateScore(false), 500);
-            }
-          });
-        }
-
-        // Display the lease dashboard again and show a toaster
-        setActiveForm(false);
-        toast.success("Rent payment confirmed", {
-          description: "Your rent has been paid and recorded onchain",
-          duration: 4000,
-        });
-      };
-
-      handlePaymentSuccess();
+  try {
+    if (!address || !rentAmount) {
+      console.warn("[x] Missing address or rent amount.");
+      return;
     }
-  }, [isSuccess]);
+    if (!eas) {
+      console.warn("[x] EAS not initialized yet.");
+      return;
+    }
 
-  const handleClick = async(flag: boolean) => {
-    setActiveForm(flag);
+    const today = new Date();
+    const amountWei = parseEther(String(rentAmount));
+
+    if (onTime !== null) {
+      attestId = await sendAttestation(
+        String(amountWei),
+        onTime,
+        toMonthYear(today),
+        address
+      );
+      console.log(`[*] Payment recorded, attestation id: ${attestId}`);
+      toast.success("Attestation confirmed onchain");
+    }
+  } catch (err) {
+    console.error("[x] Attestation failed:", err);
+    attestId = "error";
+    toast.error("Attestation failed. Please try again.");
   }
 
-  const handleConfirm = async() => {
-      payRent();
-      
+  // ---- Update payments array immutably
+  setPayments(prev => [
+    {
+      date: "10-2025", amount: 0.01, status: "due",
+    },
+    
+    { date: "09-2025",
+      amount: 0.01,
+      status: "paid",
+      color: "green",
+      attestationId: attestId || "pending",
+      },
+    ...prev.slice(1),
+  ]);
 
-  };
+  // ---- Refresh rental score
+  try {
+    const res = await refetchScore();
+    if (res.data) {
+      setLocalScore(Number(res.data));
+      setAnimateScore(true);
+      setTimeout(() => setAnimateScore(false), 500);
+    }
+  } catch (err) {
+    console.error("Score update failed:", err);
+  }
+
+  // ---- Close form + toast
+  setActiveForm(false);
+  toast.success("Rent payment confirmed", {
+    description: "Your rent has been paid and recorded onchain",
+    duration: 4000,
+  });
+};
+
+// ---- React effect: trigger on successful tx
+useEffect(() => {
+  if (isSuccess && eas) {
+    handlePaymentSuccess();
+  }
+}, [isSuccess, eas]);
+
+// ---- User action handlers
+const handleClick = (flag: boolean) => {
+  setActiveForm(flag);
+};
+
+const handleConfirm = () => {
+  payRent();
+}; 
 
 
 
@@ -121,7 +138,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
           </div>
           <div className="flex flex-row justify-between pb-4">
             <H3>Rental Period</H3>
-            <p>January 2025</p>
+            <p>September 2025</p>
           </div>
           <div className="flex flex-row justify-between pb-4">
             <H3>Landlord Wallet</H3>

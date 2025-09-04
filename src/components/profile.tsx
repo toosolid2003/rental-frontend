@@ -1,7 +1,10 @@
+"use client"
+
 import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card"
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance } from "wagmi";
+import EasTester from "./eas_tester";
 
 
 function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
@@ -30,7 +33,7 @@ function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
            <CardContent className="flex flex-col justify-between p-4 space-y-3">
 
              <div className="flex justify-between items-center ">
-              <ConnectButton showBalance={false} chainStatus="none"/>
+              <ConnectButton showBalance={false} chainStatus="icon"/>
               <img src="/verified.svg" alt="verified" className="w-6 h-6 invert"/>
              </div>
              
@@ -41,7 +44,7 @@ function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
                    isLoading ? "Loading balance" : Number(balance?.formatted).toFixed(1)
                  }</div>
                <div className="text-xs text-white/70 ml-1 mb-0.5">{
-                 isLoading ? "" : "USD"
+                 isLoading ? "" : "ETH"
                }</div>
              </div>
 

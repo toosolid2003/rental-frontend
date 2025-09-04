@@ -1,4 +1,6 @@
 // src/hooks/useEas.tsx
+"use client"
+
 
 import { useEffect, useState } from "react";
 import { useWalletClient } from "wagmi";
@@ -6,6 +8,9 @@ import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
 import { BrowserProvider } from "ethers";
 import { Address } from "viem";
 import { toEpoch } from "@/lib/utils";
+
+const EAS_GRAPHQL_URL = "https://sepolia.easscan.org/graphql";
+
 
 const EASContractAddress = "0xC2679fBD37d54388Ce493F1DB75320D236e1815e";
 const schemaUID = "0x998f3887d5a782407412b13d54afa8bc6d44b345e947988f8798531cdea269c2";
@@ -43,6 +48,7 @@ export const useEasAttestation = () => {
       { name: "on_time", value: on_time, type: "bool" },
       { name: "month_year", value: toEpoch(month_year).toString(), type: "uint256" },
     ]);
+    console.log("EAS data encoded")
 
     const tx = await eas.attest({
       schema: schemaUID,
@@ -53,39 +59,11 @@ export const useEasAttestation = () => {
       },
     });
 
+    console.log("Sending EAS transaction")
     const uid = await tx.wait();
     console.log("✅ Attested:", uid);
     return uid;
   };
-
-
-
-
- const getPaymentDetails = async (attestationId: string) => {
-  if (!eas) throw new Error("EAS not initialized");
-  // Fetch from subgraph by ID
-  const query = `
-    {
-      attestation(id: "${attestationId}") {
-        id
-        data
-        time
-      }
-    }
-  `;
-  const response = await fetch("https://sepolia.easscan.org/graphql", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query }),
-  });
-  const { data } = await response.json();
-  if (!data?.attestation) return null;
-
-  const decoded = new SchemaEncoder("address tenant, uint64 amount, bool on_time, uint256 month_year").decodeData(data.attestation.data);
-  return Object.fromEntries(decoded.map((f: any) => [f.name, f.value]));
-};
-
-
 
 
  const getRecentAttestationsByTenant = async (tenant: Address) => {
@@ -156,7 +134,6 @@ export const useEasAttestation = () => {
   return {
     eas,
     sendAttestation,
-    getPaymentDetails,
     getRecentAttestationsByTenant,
   };
 };
