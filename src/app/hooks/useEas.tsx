@@ -18,6 +18,9 @@ const schemaUID = "0x998f3887d5a782407412b13d54afa8bc6d44b345e947988f8798531cdea
 export const useEasAttestation = () => {
   const { data: walletClient } = useWalletClient();
   const [eas, setEas] = useState<EAS | null>(null);
+  const [isEasPending, setIsPending] = useState(false);
+  const [isEasError, setIsError] = useState(false);
+  const [isEasSuccess, setEasSuccess] = useState(false);
 
   useEffect(() => {
     const setup = async () => {
@@ -37,8 +40,14 @@ export const useEasAttestation = () => {
     month_year: string,
     tenant: Address
   ) => {
-    if (!eas) throw new Error("EAS not initialized");
-    if (!tenant) throw new Error("Tenant address is required");
+    if (!eas) {
+      throw new Error("EAS not initialized");
+      setIsError(true);
+    }
+    if (!tenant) {
+      throw new Error("Tenant address is required");
+      setIsError(true);
+    }
 
     const encoder = new SchemaEncoder("address tenant, uint64 amount, bool on_time, uint256 month_year");
 
@@ -58,10 +67,13 @@ export const useEasAttestation = () => {
         data: encodedData,
       },
     });
+    setIsPending(true);
 
     console.log("Sending EAS transaction")
     const uid = await tx.wait();
     console.log("✅ Attested:", uid);
+    setIsPending(false);
+    setEasSuccess(true)
     return uid;
   };
 
@@ -133,6 +145,9 @@ export const useEasAttestation = () => {
 
   return {
     eas,
+    isEasError,
+    isEasPending,
+    isEasSuccess,
     sendAttestation,
     getRecentAttestationsByTenant,
   };

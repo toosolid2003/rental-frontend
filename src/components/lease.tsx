@@ -14,6 +14,7 @@ import { toMonthYear } from "@/lib/utils";
 import { useWatchRent } from "@/app/hooks/usePaymentEvents";
 import { useRouter } from "next/navigation";
 import { parseEther } from "viem";
+import ProgressSection  from "@/components/progress";
 
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
@@ -22,14 +23,17 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
 
-  const { payRent, isSuccess } = usePayRent(contractAddress, "0.01");
-  const { eas, sendAttestation } = useEasAttestation();
+  const { payRent, isPending, isError, isSuccess } = usePayRent(contractAddress, "0.01");
+  const { eas, sendAttestation, isEasSuccess, isEasPending } = useEasAttestation();
   const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, landlord, refetchScore } = useRentalInfo();
   const [localScore, setLocalScore] = useState<number | undefined>();
   const [animateScore, setAnimateScore] = useState(false);
   const { address } = useAccount();
   const onTime = useWatchRent(contractAddress);
   const router = useRouter();
+
+  const [isPaying, setIsPaying] = useState(false);
+
 
   const [payments, setPayments] = useState([
     { date: "09-2025", amount: 0.01, status: "due" },
@@ -39,11 +43,37 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
   ]);
 
 
-// ---- Handle payment + attestation
+// ---- Handle payment
 const handlePaymentSuccess = async () => {
   console.log("Payment is successful.");
-  onPaymentSuccess(); // Notify parent component
+  onPaymentSuccess();
 
+
+  // ---- Now trigger attestation after payment success
+  await handleEas();
+
+
+  // Close the form 
+  setIsPaying(false);
+  setActiveForm(false);
+  toast.success("Rent payment confirmed", {
+    description: "Your rent has been paid and recorded onchain",
+    duration: 4000,
+  });
+
+  try {
+    const res = await refetchScore();
+    if (res.data) {
+      setLocalScore(Number(res.data));
+      setAnimateScore(true);
+      setTimeout(() => setAnimateScore(false), 500);
+    }
+  } catch (err) {
+    console.error("Score update failed:", err);
+  }
+};
+
+const handleEas = async () => {
   let attestId: string | null = null;
 
   try {
@@ -74,8 +104,7 @@ const handlePaymentSuccess = async () => {
     attestId = "error";
     toast.error("Attestation failed. Please try again.");
   }
-
-  // ---- Update payments array immutably
+    // ---- Update payments array immutably
   setPayments(prev => [
     {
       date: "10-2025", amount: 0.01, status: "due",
@@ -90,26 +119,7 @@ const handlePaymentSuccess = async () => {
     ...prev.slice(1),
   ]);
 
-  // ---- Refresh rental score
-  try {
-    const res = await refetchScore();
-    if (res.data) {
-      setLocalScore(Number(res.data));
-      setAnimateScore(true);
-      setTimeout(() => setAnimateScore(false), 500);
-    }
-  } catch (err) {
-    console.error("Score update failed:", err);
-  }
-
-  // ---- Close form + toast
-  setActiveForm(false);
-  toast.success("Rent payment confirmed", {
-    description: "Your rent has been paid and recorded onchain",
-    duration: 4000,
-  });
-};
-
+}
 // ---- React effect: trigger on successful tx
 useEffect(() => {
   if (isSuccess && eas) {
@@ -120,10 +130,13 @@ useEffect(() => {
 // ---- User action handlers
 const handleClick = (flag: boolean) => {
   setActiveForm(flag);
+  if (flag) setIsPaying(false);
 };
 
 const handleConfirm = () => {
+  setIsPaying(true);
   payRent();
+  
 }; 
 
 
@@ -150,8 +163,19 @@ const handleConfirm = () => {
           <p>Pay</p>
           <H1>${rentAmount?.toString()}</H1>
           <div className="flex pt-4">
-            <Button className="mr-4" variant="outline" onClick={() => handleClick(false)} >Cancel</Button>
-            <Button onClick={() => handleConfirm()}>Confirm</Button>
+            {isPaying ? (
+              <ProgressSection isPending={isPending}
+              isSuccess={isSuccess}
+              isEasPending={isEasPending}
+              isEasSuccess={isEasSuccess}
+              />
+            ) : (
+              <>
+              <Button className="mr-4" variant="outline" onClick={() => handleClick(false)} >Cancel</Button>
+              <Button onClick={() => handleConfirm()}>Confirm</Button>
+              </>
+            )        
+          }
 
           </div>
 
