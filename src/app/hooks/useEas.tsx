@@ -59,10 +59,12 @@ export const useEasAttestation = () => {
     ]);
     console.log("EAS data encoded")
 
+    const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
+
     const tx = await eas.attest({
       schema: schemaUID,
       data: {
-        recipient: tenant,
+        recipient: contractAddress,
         revocable: false,
         data: encodedData,
       },

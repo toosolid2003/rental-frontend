@@ -15,7 +15,7 @@ import { useWatchRent } from "@/app/hooks/usePaymentEvents";
 import { useRouter } from "next/navigation";
 import { parseEther } from "viem";
 import ProgressSection  from "@/components/progress";
-
+import TestSendAttestation from "@/lib/eas.attestation";
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
