@@ -21,7 +21,7 @@ function ProgressSection({
     label = "Sending payment";
   } else if (isSuccess) {
     status = 50;
-    label = "Waiting for use to confirm receipt";
+    label = "Waiting for user to confirm receipt";
   } else if (isEasPending) {
     status = 75;
     label = "Generating receipt";

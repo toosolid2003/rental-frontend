@@ -113,7 +113,7 @@ const handleEas = async () => {
     { date: "09-2025",
       amount: 0.01,
       status: "paid",
-      color: "green",
+      color: "orange",
       attestationId: attestId || "pending",
       },
     ...prev.slice(1),
