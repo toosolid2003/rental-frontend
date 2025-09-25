@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { parseEther } from "viem";
 import ProgressSection  from "@/components/progress";
 import TestSendAttestation from "@/lib/eas.attestation";
+import PaymentHistory from "./paymentHistory";
 
 function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
@@ -36,10 +37,10 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
 
   const [payments, setPayments] = useState([
-    { date: "09-2025", amount: 0.01, status: "due" },
-    { date: "08-2025", amount: 0.01, status: "paid", color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
-    { date: "07-2025", amount: 0.01, status: "paid", color: "orange", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
-    { date: "06-2025", amount: 0.01, status: "paid", color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
+    { date: "09-2025", amount: 0.01, status: "due" as const },
+    { date: "08-2025", amount: 0.01, status: "paid" as const, color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
+    { date: "07-2025", amount: 0.01, status: "paid" as const, color: "orange", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
+    { date: "06-2025", amount: 0.01, status: "paid" as const, color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
   ]);
 
 
@@ -197,43 +198,11 @@ const handleConfirm = () => {
         </div>
         <hr />
 
-        {payments.map((p, i) => (
-          <div
-            key={i}
-            className={`flex justify-between items-center border-b pb-3 pt-3 ${p.status === "paid" ? "cursor-pointer hover:bg-gray-50" : ""}`}
-            onClick={() => {
-              if (p.status === "paid" && p.attestationId) {
-                router.push(`/payments/${p.attestationId}`);
-              }
-            }}
-          >
-            <div>
-              <div className="text-sm text-gray-600">{p.date}</div>
-              <div className="flex flex-row items-end">
-                <div className="text-3xl font-semibold">${rentAmountLoading ? (
-                  <span className="text-gray-500">Loading...</span>
-                ) : (<span className="text-black-500">{rentAmount?.toString()}</span>)}</div>
-                <div className="text-xs text-gray-500 mb-0.5 ml-1">ETH</div>
-              </div>
-            </div>
-            {p.status === "paid" ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm">Paid</span>
-                <span
-                  className={`w-3 h-3 rounded-full ${
-                    p.color === "green"
-                      ? "bg-green-500"
-                      : "bg-orange-400"
-                  }`}
-                />
-              </div>
-            ) : (
-              <Button className="bg-indigo-600 text-white rounded-xl px-6 py-2" onClick={() => handleClick(true)}>
-                Pay
-              </Button>
-            )}
-          </div>
-        ))}
+        <PaymentHistory payments={payments}
+        rentAmount={rentAmount}
+        rentAmountLoading={rentAmountLoading}
+        onPayClick={() => handleClick(true)}
+        />
       </div>
   );
 }
