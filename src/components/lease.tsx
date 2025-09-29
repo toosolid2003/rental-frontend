@@ -91,6 +91,7 @@ const handleEas = async () => {
     const amountWei = parseEther(String(rentAmount));
 
     if (onTime !== null) {
+      console.log("[*] Sending attestation request")
       attestId = await sendAttestation(
         String(amountWei),
         onTime,
@@ -124,6 +125,7 @@ const handleEas = async () => {
 // ---- React effect: trigger on successful tx
 useEffect(() => {
   if (isSuccess && eas) {
+    console.log("[*] Successful payment detected. useEffect triggered.")
     handlePaymentSuccess();
   }
 }, [isSuccess, eas]);

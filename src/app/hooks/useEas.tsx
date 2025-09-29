@@ -40,43 +40,43 @@ export const useEasAttestation = () => {
     month_year: string,
     tenant: Address
   ) => {
-    if (!eas) {
-      throw new Error("EAS not initialized");
-      setIsError(true);
-    }
-    if (!tenant) {
-      throw new Error("Tenant address is required");
-      setIsError(true);
-    }
+    if (!eas) throw new Error("EAS not initialized");
+    if (!tenant) throw new Error("Tenant address is required");
 
-    const encoder = new SchemaEncoder("address tenant, uint64 amount, bool on_time, uint256 month_year");
-
-    const encodedData = encoder.encodeData([
-      { name: "tenant", value: tenant, type: "address" },
-      { name: "amount", value: amount, type: "uint64" },
-      { name: "on_time", value: on_time, type: "bool" },
-      { name: "month_year", value: toEpoch(month_year).toString(), type: "uint256" },
-    ]);
-    console.log("EAS data encoded")
-
-    const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
-
-    const tx = await eas.attest({
-      schema: schemaUID,
-      data: {
-        recipient: contractAddress,
-        revocable: false,
-        data: encodedData,
-      },
-    });
     setIsPending(true);
+    setEasSuccess(false);
+    setIsError(false);
 
-    console.log("Sending EAS transaction")
-    const uid = await tx.wait();
-    console.log("✅ Attested:", uid);
-    setIsPending(false);
-    setEasSuccess(true)
-    return uid;
+    try {
+      const encoder = new SchemaEncoder("address tenant, uint64 amount, bool on_time, uint256 month_year");
+
+      const encodedData = encoder.encodeData([
+        { name: "tenant", value: tenant, type: "address" },
+        { name: "amount", value: amount, type: "uint64" },
+        { name: "on_time", value: on_time, type: "bool" },
+        { name: "month_year", value: toEpoch(month_year).toString(), type: "uint256" },
+      ]);
+      console.log("[*] EAS data encoded")
+
+      const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
+
+      const tx = await eas.attest({
+        schema: schemaUID,
+        data: {
+          recipient: contractAddress,
+          revocable: false,
+          data: encodedData,
+        },
+      });
+      const uid = await tx.wait();
+      setIsPending(false);
+      setEasSuccess(true)
+      return uid;
+    } catch (err) {
+      setIsPending(false);
+      setIsError(true);
+      throw err;
+    }
   };
 
 

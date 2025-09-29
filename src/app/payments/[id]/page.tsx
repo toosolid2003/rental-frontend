@@ -28,16 +28,17 @@ import { formatAddress } from "@/lib/utils";
 export default async function PaymentDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   // Fetch the attestation data using the ID from the URL
-  const attestation = await getPaymentDetails(params.id);
+  const { id } = await params;
+  const attestation = await getPaymentDetails(id);
 
   if (!attestation) {
     return (
       <div className="p-6">
         <h1 className="text-xl font-semibold">Payment not found</h1>
-        <p>No attestation could be retrieved for ID: {params.id}</p>
+        <p>No attestation could be retrieved for ID: {id}</p>
       </div>
     );
   }
@@ -65,7 +66,7 @@ export default async function PaymentDetailsPage({
         </p>
         <p>
             <span className="font-medium">Attestation ID:</span>{" "}
-            <span style={{ wordBreak: "break-all" }}>{params.id}</span>
+            <span style={{ wordBreak: "break-all" }}>{id}</span>
         </p>
       </div>
     </div>
