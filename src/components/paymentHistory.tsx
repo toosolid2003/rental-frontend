@@ -90,8 +90,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ handlePayment }) => {
                         ) : (
                             <Button 
                                 className="bg-indigo-600 text-white rounded-xl px-6 py-2" 
-                                onClick={handlePay}
-                            >
+                                onClick={handlePay} >
                                 Pay
                             </Button>
                         )}
