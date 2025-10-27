@@ -40,6 +40,14 @@ export const useRentalInfo = () => {
         account: address,
     })
 
+    // Retrieve payment schedule
+    const paymentsRead = useReadContract({
+        abi: Rental.abi,
+        address: contractAddress,
+        functionName: "getPayments",
+        account: address,
+    })
+
 
     const rent = typeof rentRead.data === "bigint"
         ? Number(formatEther(rentRead.data))
@@ -52,6 +60,10 @@ export const useRentalInfo = () => {
         rentAmountLoading: rentRead.isLoading,
         landlord: landRead.data,
         payDate: payDateRead.data,
+        payments: paymentsRead.data,
+        isPaymentsLoading: paymentsRead.isLoading,
+        isPaymentsError: paymentsRead.isError,
+        refetchPayments: paymentsRead.refetch,
         refetchScore: scoreRead.refetch,
     }
 

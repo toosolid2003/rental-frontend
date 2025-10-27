@@ -24,3 +24,21 @@ export function toMonthYear(raw: Date)  {
   const year = raw.getFullYear();
   return `${month}-${year}`;
 }
+
+interface Payment{
+  date: BigInt,
+  paid: boolean,
+  on_time: boolean
+}
+
+export function paymentFilter(payments: Array<Payment>) {
+  return payments.filter(payment => payment.paid === true);
+}
+
+export function nextPayment(payments: Array<Payment>) {
+  const unpaid = payments.filter(payment => payment.paid === false);
+
+  if (unpaid.length === 0) return undefined;
+
+  return unpaid.reduce((min, curr) => (curr.date < min.date ? curr : min));
+}

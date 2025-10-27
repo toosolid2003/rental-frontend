@@ -26,7 +26,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const { payRent, isPending, isError, isSuccess } = usePayRent(contractAddress, "0.01");
   const { eas, sendAttestation, isEasSuccess, isEasPending } = useEasAttestation();
-  const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, landlord, refetchScore } = useRentalInfo();
+  const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, landlord, refetchScore} = useRentalInfo();
   const [localScore, setLocalScore] = useState<number | undefined>();
   const [animateScore, setAnimateScore] = useState(false);
   const { address } = useAccount();
@@ -35,13 +35,12 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const [isPaying, setIsPaying] = useState(false);
 
-
-  const [payments, setPayments] = useState([
-    { date: "09-2025", amount: 0.01, status: "due" as const },
-    { date: "08-2025", amount: 0.01, status: "paid" as const, color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
-    { date: "07-2025", amount: 0.01, status: "paid" as const, color: "orange", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
-    { date: "06-2025", amount: 0.01, status: "paid" as const, color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
-  ]);
+  // const [payments, setPayments] = useState([
+  //   { date: "09-2025", amount: 0.01, status: "due" as const },
+  //   { date: "08-2025", amount: 0.01, status: "paid" as const, color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
+  //   { date: "07-2025", amount: 0.01, status: "paid" as const, color: "orange", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
+  //   { date: "06-2025", amount: 0.01, status: "paid" as const, color: "green", attestationId: "0xf34eee5b9ce93e3af6ef1074f87da2c34b79223a4d4c69173034823e93afb245" },
+  // ]);
 
 
 // ---- Handle payment
@@ -107,21 +106,21 @@ const handleEas = async () => {
     toast.error("Attestation failed. Please try again.");
   }
     // ---- Update payments array immutably
-  setPayments(prev => [
-    {
-      date: "10-2025", amount: 0.01, status: "due",
-    },
+//   setPayments(prev => [
+//     {
+//       date: "10-2025", amount: 0.01, status: "due",
+//     },
     
-    { date: "09-2025",
-      amount: 0.01,
-      status: "paid",
-      color: "orange",
-      attestationId: attestId || "pending",
-      },
-    ...prev.slice(1),
-  ]);
+//     { date: "09-2025",
+//       amount: 0.01,
+//       status: "paid",
+//       color: "orange",
+//       attestationId: attestId || "pending",
+//       },
+//     ...prev.slice(1),
+//   ]);
 
-}
+// }
 // ---- React effect: trigger on successful tx
 useEffect(() => {
   if (isSuccess && eas) {
@@ -200,15 +199,13 @@ const handleConfirm = () => {
         </div>
         <hr />
 
-        <PaymentHistory payments={payments}
-        rentAmount={rentAmount}
-        rentAmountLoading={rentAmountLoading}
-        onPayClick={() => handleClick(true)}
-        />
+        <PaymentHistory 
+          handlePayment={handleConfirm}/>
+
       </div>
   );
 }
-
+}
 
 export default Lease;
 
