@@ -24,7 +24,7 @@ function Lease({onPaymentSuccess}: {onPaymentSuccess: () => void})    {
 
   const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
 
-  const { payRent, isPending, isError, isSuccess } = usePayRent(contractAddress, "0.01");
+  const { payRent, isPending, isError, isSuccess } = usePayRent();
   const { eas, sendAttestation, isEasSuccess, isEasPending } = useEasAttestation();
   const { rentalScore, rentalScoreLoading, rentAmount, rentAmountLoading, landlord, refetchScore} = useRentalInfo();
   const [localScore, setLocalScore] = useState<number | undefined>();
