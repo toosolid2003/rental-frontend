@@ -2,19 +2,21 @@ import { useState } from "react";
 import { useWatchContractEvent } from "wagmi";
 import Rental from "@/lib/Rental.json";
 
-export function useWatchRent(contractAddress: `0x${string}`) {
-  const [onTime, setOnTime] = useState<boolean | null>(null);
+export function useWatchRent(
+  contractAddress: `0x${string}`,
+  onRentPaid?: () => void
+) {
 
-  useWatchContractEvent<typeof Rental.abi, "RentPaid">({
+  useWatchContractEvent({
     address: contractAddress,
     abi: Rental.abi,
     eventName: "RentPaid",
     onLogs(logs) {
-      logs.forEach((log) => {
-        const { onTime } = log.args;
-        setOnTime(onTime);
-      });
+      if(logs.length > 0) {
+        // Triggers the callback function
+        onRentPaid?.();
+      }
     }
-});
-  return onTime;
+}
+);
 }

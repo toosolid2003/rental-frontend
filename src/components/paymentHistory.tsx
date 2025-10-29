@@ -1,7 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Button } from "./ui/button";
 import { useRentalInfo } from "@/app/hooks/useRentalInfo";
 import { useRouter } from "next/navigation";
+import { useWatchRent } from "@/app/hooks/usePaymentEvents";
+import { Address } from "viem";
 
 // Coming directly from the contract
 interface Payment {
@@ -19,6 +21,7 @@ interface EnhancedPayment extends Payment {
 const PaymentHistory = () => {
     const { rentAmount, rentAmountLoading, payments, isPaymentsLoading, refetchPayments } = useRentalInfo();
     const router = useRouter();
+    const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
 
     // Date format options: request a weekday along with a long date
     const options: Intl.DateTimeFormatOptions = {
@@ -27,6 +30,8 @@ const PaymentHistory = () => {
         month: "long",
         day: "numeric",
     };
+    
+    useWatchRent(contractAddress, refetchPayments)
 
     // Process payments to add color and filter unpaid
     const processedPayments = useMemo(() => {
@@ -40,8 +45,6 @@ const PaymentHistory = () => {
                 color: p.onTime ? "green" : "orange"
             })) as EnhancedPayment[];
         
-        console.log(paidPayments);
-
         // Find earliest unpaid payment and convert it to EnhancedPayment (color won't be used for unpaid)
         const earliestUnpaid = rawPayments
             .filter(p => !p.paid)
@@ -56,7 +59,7 @@ const PaymentHistory = () => {
         }
 
         return ([...paidPayments, earliestUnpaidEnhanced].filter(Boolean) as EnhancedPayment[]);
-    }, [payments]);
+    }, [payments, isPaymentsLoading]);
 
     const handlePay = async () => {
         router.push('/payment')

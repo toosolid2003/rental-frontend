@@ -12,7 +12,7 @@ import { toast } from "sonner";
 interface Payment {
     date: Number;
     paid: boolean;
-    on_time: boolean;
+    onTime: boolean;
 }
 
 
@@ -86,7 +86,7 @@ const PaymentScreen = () => {
               />
             ) : (
               <>
-              <Button className="mr-4" variant="outline" onClick={() => handleCancel} >Cancel</Button>
+              <Button className="mr-4" variant="outline" onClick={handleCancel} >Cancel</Button>
               <Button onClick={() => handleConfirm()}>Confirm</Button>
               </>
             )        
