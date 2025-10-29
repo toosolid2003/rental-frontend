@@ -2,13 +2,12 @@ import React, { useState, useMemo } from "react";
 import { Button } from "./ui/button";
 import { useRentalInfo } from "@/app/hooks/useRentalInfo";
 import { useRouter } from "next/navigation";
-import { getUIDsFromMultiAttestTx } from "@ethereum-attestation-service/eas-sdk";
 
 // Coming directly from the contract
 interface Payment {
     date: Number;
     paid: boolean;
-    on_time: boolean;
+    onTime: boolean;
 }
 
 interface EnhancedPayment extends Payment {
@@ -38,8 +37,10 @@ const PaymentHistory = () => {
             .filter(p => p.paid)
             .map(p => ({
                 ...p,
-                color: p.on_time ? "green" : "orange"
+                color: p.onTime ? "green" : "orange"
             })) as EnhancedPayment[];
+        
+        console.log(paidPayments);
 
         // Find earliest unpaid payment and convert it to EnhancedPayment (color won't be used for unpaid)
         const earliestUnpaid = rawPayments

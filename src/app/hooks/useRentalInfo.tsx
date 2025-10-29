@@ -7,7 +7,7 @@ import Rental from "@/lib/Rental.json";
 export interface Payment {
   date: number;      // unix timestamp (number)
   paid: boolean;
-  on_time: boolean;
+  onTime: boolean;
 }
 
 export const useRentalInfo = () => {
@@ -55,14 +55,6 @@ export const useRentalInfo = () => {
         account: address,
     })
 
-    // Debug raw payments data
-    useEffect(() => {
-        console.log('Raw payments data:', {
-            data: paymentsRead.data,
-            isLoading: paymentsRead.isLoading,
-            error: paymentsRead.error
-        });
-    }, [paymentsRead.data, paymentsRead.isLoading, paymentsRead.error]);
 
     const rent = typeof rentRead.data === "bigint"
         ? Number(formatEther(rentRead.data))
@@ -71,7 +63,6 @@ export const useRentalInfo = () => {
     // normalize raw contract output into a stable Payment[] array
     const payments = useMemo<Payment[]>(() => {
       const raw = paymentsRead.data;
-      console.log('Normalizing payments:', raw); // Debug pre-normalization
     
       if (!Array.isArray(raw)) {
           console.log('Payments data is not an array:', raw);
@@ -81,18 +72,15 @@ export const useRentalInfo = () => {
       const normalized = raw.map((p: any) => {
         const dateRaw = p?.date ?? p?.[0];
         const paidRaw = p?.paid ?? p?.[1];
-        const onTimeRaw = p?.onTime ?? p?.on_time ?? p?.[2];
-
-        console.log('Processing payment:', { dateRaw, paidRaw, onTimeRaw }); // Debug each payment
+        const onTimeRaw = p?.onTime ?? p?.onTime ?? p?.[2];
 
         return {
             date: typeof dateRaw === "bigint" ? Number(dateRaw) : Number(dateRaw ?? 0),
             paid: Boolean(paidRaw),
-            on_time: Boolean(onTimeRaw)
+            onTime: Boolean(onTimeRaw)
         } as Payment;
       });
 
-      console.log('Normalized payments:', normalized); // Debug post-normalization
       return normalized;
     }, [paymentsRead.data]);
 
