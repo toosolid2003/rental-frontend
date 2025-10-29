@@ -40,5 +40,10 @@ export function usePayRent()  {
   };
 
 
-  return { payRent, txHash, isPending, isError, isSuccess, isLoading: rentAmountLoading };
+  return { payRent, 
+    txHash, 
+    isPending, 
+    isError, 
+    isSuccess, 
+    isLoading: rentAmountLoading };
 }

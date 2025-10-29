@@ -1,7 +1,14 @@
 import {useReadContract, useAccount} from 'wagmi';
 import { Address, formatEther } from 'viem';
+import { useMemo, useEffect } from 'react';
 import Rental from "@/lib/Rental.json";
 
+
+export interface Payment {
+  date: number;      // unix timestamp (number)
+  paid: boolean;
+  on_time: boolean;
+}
 
 export const useRentalInfo = () => {
 
@@ -48,10 +55,47 @@ export const useRentalInfo = () => {
         account: address,
     })
 
+    // Debug raw payments data
+    useEffect(() => {
+        console.log('Raw payments data:', {
+            data: paymentsRead.data,
+            isLoading: paymentsRead.isLoading,
+            error: paymentsRead.error
+        });
+    }, [paymentsRead.data, paymentsRead.isLoading, paymentsRead.error]);
 
     const rent = typeof rentRead.data === "bigint"
         ? Number(formatEther(rentRead.data))
         : undefined;
+
+    // normalize raw contract output into a stable Payment[] array
+    const payments = useMemo<Payment[]>(() => {
+      const raw = paymentsRead.data;
+      console.log('Normalizing payments:', raw); // Debug pre-normalization
+    
+      if (!Array.isArray(raw)) {
+          console.log('Payments data is not an array:', raw);
+          return [];
+      }
+
+      const normalized = raw.map((p: any) => {
+        const dateRaw = p?.date ?? p?.[0];
+        const paidRaw = p?.paid ?? p?.[1];
+        const onTimeRaw = p?.onTime ?? p?.on_time ?? p?.[2];
+
+        console.log('Processing payment:', { dateRaw, paidRaw, onTimeRaw }); // Debug each payment
+
+        return {
+            date: typeof dateRaw === "bigint" ? Number(dateRaw) : Number(dateRaw ?? 0),
+            paid: Boolean(paidRaw),
+            on_time: Boolean(onTimeRaw)
+        } as Payment;
+      });
+
+      console.log('Normalized payments:', normalized); // Debug post-normalization
+      return normalized;
+    }, [paymentsRead.data]);
+
     
     return  {
         rentalScore: scoreRead.data,
@@ -60,7 +104,7 @@ export const useRentalInfo = () => {
         rentAmountLoading: rentRead.isLoading,
         landlord: landRead.data,
         payDate: payDateRead.data,
-        payments: paymentsRead.data,
+        payments, 
         isPaymentsLoading: paymentsRead.isLoading,
         isPaymentsError: paymentsRead.isError,
         refetchPayments: paymentsRead.refetch,

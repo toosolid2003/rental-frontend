@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { Button } from "./ui/button";
 import { useRentalInfo } from "@/app/hooks/useRentalInfo";
+import { useRouter } from "next/navigation";
+import { getUIDsFromMultiAttestTx } from "@ethereum-attestation-service/eas-sdk";
 
 // Coming directly from the contract
 interface Payment {
-    date: BigInt;
+    date: Number;
     paid: boolean;
     on_time: boolean;
 }
@@ -13,12 +15,19 @@ interface EnhancedPayment extends Payment {
     color: "green" | "orange";
 }
 
-interface PaymentHistoryProps {
-    handlePayment?: () => void
-}
 
-const PaymentHistory: React.FC<PaymentHistoryProps> = ({ handlePayment }) => {
+
+const PaymentHistory = () => {
     const { rentAmount, rentAmountLoading, payments, isPaymentsLoading, refetchPayments } = useRentalInfo();
+    const router = useRouter();
+
+    // Date format options: request a weekday along with a long date
+    const options: Intl.DateTimeFormatOptions = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    };
 
     // Process payments to add color and filter unpaid
     const processedPayments = useMemo(() => {
@@ -40,15 +49,16 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ handlePayment }) => {
         const earliestUnpaidEnhanced = earliestUnpaid
             ? ({ ...earliestUnpaid, color: "orange" } as EnhancedPayment)
             : undefined;
+        
+        if (!isPaymentsLoading) {
+            console.log("paidPayments:", paidPayments);
+        }
 
         return ([...paidPayments, earliestUnpaidEnhanced].filter(Boolean) as EnhancedPayment[]);
     }, [payments]);
 
     const handlePay = async () => {
-        if (handlePayment) {
-            await handlePayment();
-        }
-        await refetchPayments();
+        router.push('/payment')
     };
 
     if (isPaymentsLoading) {
@@ -58,14 +68,16 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ handlePayment }) => {
     return (
         <div className="space-y-2 max-w-md mx-auto">
             <div>
-                {processedPayments.map((p, i) => (
+                {[...processedPayments]
+                .sort((a, b) => Number(b.date) - Number(a.date))
+                .map((p, i) => (
                     <div
                         key={i}
                         className="flex justify-between items-center border-b pb-3 pt-3"
                     >
                         <div>
                             <div className="text-sm text-gray-600">
-                                {new Date(Number(p.date) * 1000).toLocaleDateString()}
+                                {new Date(Number(p.date) * 1000).toLocaleString("en-GB", options)}
                             </div>
                             <div className="flex flex-row items-end">
                                 <div className="text-3xl font-semibold">

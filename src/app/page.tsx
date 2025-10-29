@@ -14,7 +14,7 @@ export default function Home() {
     <>
       {isConnected ? (<>
         <Profile paymentSuccess={paymentSuccess}/>
-        <Lease onPaymentSuccess={() => setPaymentSuccess(true)} />
+        <Lease />
       </>) : <DisconnectedHome />}
     </>
 

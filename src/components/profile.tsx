@@ -4,7 +4,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance } from "wagmi";
 
 
-function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
+function Profile()  {
 
   // Generic hooks
   const { address }  = useAccount();
@@ -14,14 +14,6 @@ function Profile({ paymentSuccess }: {paymentSuccess: boolean})  {
   const { data: balance, refetch, isLoading } = useBalance({ address: address ?? undefined  });
 
 
-  // useEffect hook
-
-  useEffect(() => {
-    if(paymentSuccess)  {
-      console.log("Payment updated");
-      refetch();
-    }
-  }, [paymentSuccess]);
 
   return(
     <div className="p-4 max-w-md mx-auto space-y-6 relative pb-12">
