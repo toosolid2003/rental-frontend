@@ -19,7 +19,7 @@ interface Payment {
 const PaymentScreen = () => {
   
   const router = useRouter();
-  const {payRent, isPending, isError, isSuccess } = usePayRent();
+  const {payRent, isPending, isError, isSuccess, txHash } = usePayRent();
   const [isPaying, setIsPaying] = useState(false);
   const {landlord, rentAmount, rentAmountLoading, payments} = useRentalInfo();
 
@@ -44,8 +44,10 @@ const PaymentScreen = () => {
         router.push('/');
       }, 2000);
       // Wait 2 seconds 
+
+      //TODO: store tx hash in the contract
     }
-  }, [isSuccess, router]
+  }, [isSuccess]
   )
 
   const rawPayments = (payments as Payment[]) || [];
