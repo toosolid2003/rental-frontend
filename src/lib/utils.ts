@@ -26,12 +26,12 @@ export function toMonthYear(raw: Date)  {
 }
 
 interface Payment{
-  date: BigInt,
+  date: Number,
   paid: boolean,
-  on_time: boolean
+  onTime: boolean
 }
 
-export function paymentFilter(payments: Array<Payment>) {
+export function paidPayments(payments: Array<Payment>) {
   return payments.filter(payment => payment.paid === true);
 }
 
