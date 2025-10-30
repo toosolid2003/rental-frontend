@@ -1,6 +1,6 @@
 import {useReadContract, useAccount} from 'wagmi';
 import { Address, formatEther } from 'viem';
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import Rental from "@/lib/Rental.json";
 
 

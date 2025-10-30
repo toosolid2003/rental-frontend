@@ -54,9 +54,6 @@ const PaymentHistory = () => {
             ? ({ ...earliestUnpaid, color: "orange" } as EnhancedPayment)
             : undefined;
         
-        if (!isPaymentsLoading) {
-            console.log("paidPayments:", paidPayments);
-        }
 
         return ([...paidPayments, earliestUnpaidEnhanced].filter(Boolean) as EnhancedPayment[]);
     }, [payments, isPaymentsLoading]);
