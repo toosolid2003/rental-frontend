@@ -45,7 +45,6 @@ const PaymentScreen = () => {
       }, 2000);
       // Wait 2 seconds 
 
-      //TODO: store tx hash in the contract
     }
   }, [isSuccess]
   )

@@ -24,7 +24,7 @@ function Lease()    {
         </div>
         <hr />
 
-        <PaymentHistory />
+        <PaymentHistory displayPayButton={true} />
       </div>
   );
 }

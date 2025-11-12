@@ -7,7 +7,7 @@ import { Address } from "viem";
 
 // Coming directly from the contract
 interface Payment {
-    date: Number;
+    date: number;
     paid: boolean;
     onTime: boolean;
 }
@@ -18,7 +18,7 @@ interface EnhancedPayment extends Payment {
 
 
 
-const PaymentHistory = () => {
+const PaymentHistory = ({displayPayButton = true}) => {
     const { rentAmount, rentAmountLoading, payments, isPaymentsLoading, refetchPayments } = useRentalInfo();
     const router = useRouter();
     const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
@@ -30,7 +30,8 @@ const PaymentHistory = () => {
         month: "long",
         day: "numeric",
     };
-    
+
+    // Listening to RentPaid events and fetch the updated payment schedule when it happens.
     useWatchRent(contractAddress, refetchPayments)
 
     // Process payments to add color and filter unpaid
@@ -46,14 +47,17 @@ const PaymentHistory = () => {
             })) as EnhancedPayment[];
         
         // Find earliest unpaid payment and convert it to EnhancedPayment (color won't be used for unpaid)
-        const earliestUnpaid = rawPayments
-            .filter(p => !p.paid)
-            .sort((a, b) => Number(a.date) - Number(b.date))[0];
-
-        const earliestUnpaidEnhanced = earliestUnpaid
-            ? ({ ...earliestUnpaid, color: "orange" } as EnhancedPayment)
-            : undefined;
+        let earliestUnpaidEnhanced: EnhancedPayment | undefined = undefined;
         
+        if(displayPayButton)    {
+            const earliestUnpaid = rawPayments
+                .filter(p => !p.paid)
+                .sort((a, b) => Number(a.date) - Number(b.date))[0];
+
+            earliestUnpaidEnhanced = earliestUnpaid
+                ? ({ ...earliestUnpaid, color: "orange" } as EnhancedPayment)
+                : undefined;
+        }
 
         return ([...paidPayments, earliestUnpaidEnhanced].filter(Boolean) as EnhancedPayment[]);
     }, [payments, isPaymentsLoading]);
