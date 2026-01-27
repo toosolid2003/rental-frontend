@@ -13,7 +13,8 @@ import {
 import {
   mainnet,
   sepolia,
-  hardhat
+  hardhat,
+  baseSepolia
 } from 'wagmi/chains';
 import {
   QueryClient,
@@ -23,12 +24,13 @@ import {
 const config = getDefaultConfig({
   appName: 'Rental Score',
   projectId: '3f632d4c128aa13fc0fc6d752426de10',
-  chains: [mainnet, sepolia, hardhat],
+  chains: [mainnet, sepolia, hardhat, baseSepolia],
   ssr: false,
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http(),
-    [hardhat.id]: http()
+    [hardhat.id]: http(),
+    [baseSepolia.id]: http()
   }
 });
 
