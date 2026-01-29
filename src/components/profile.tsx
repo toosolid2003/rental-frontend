@@ -1,17 +1,17 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card"
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance } from "wagmi";
-
+import { Address } from "viem";
 
 function Profile()  {
 
-  // Generic hooks
+  // Generic stuff
   const { address }  = useAccount();
-
-  // Custom or Wagmi hooks
+  const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_CONTRACT as Address
   const fallbackUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`;
-  const { data: balance, refetch, isLoading } = useBalance({ address: address ?? undefined  });
+  const { data: balance, refetch, isLoading } = useBalance({ address: address ?? undefined, token: USDC_ADDRESS  });
+
 
 
 
