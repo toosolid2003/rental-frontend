@@ -1,12 +1,15 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseEther } from 'viem';
-import { Address } from 'viem';
+import { useWriteContract, useWaitForTransactionReceipt, useReadContract, useAccount, usePublicClient } from "wagmi";
+import { Address, erc20Abi } from 'viem';
 import { useRentalInfo } from './useRentalInfo';
 import Rental from "@/lib/Rental.json"
 
+const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_CONTRACT as Address;
+
 export function usePayRent(contractAddress: Address)  {
   const { writeContractAsync } = useWriteContract();
+  const { address } = useAccount();
+  const publicClient = usePublicClient();
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const {isPending, isSuccess, isError}  = useWaitForTransactionReceipt({
     hash: txHash ?? undefined,
@@ -14,6 +17,14 @@ export function usePayRent(contractAddress: Address)  {
 });
 
   const {rentAmount, rentAmountLoading} = useRentalInfo(contractAddress);
+
+  // Read the raw expectedRent from the contract (in USDC smallest unit)
+  const { data: expectedRent } = useReadContract({
+    address: contractAddress,
+    abi: Rental.abi,
+    functionName: "checkRent",
+    account: address,
+  });
 
   const storeHash = useCallback(async() => {
 
@@ -46,18 +57,29 @@ export function usePayRent(contractAddress: Address)  {
 
   const payRent = async () => {
 
-    if(rentAmountLoading || !rentAmount)  {
+    if(rentAmountLoading || !expectedRent)  {
       throw new Error('rent amount not ready');
     }
 
     try{
-      const tx = await writeContractAsync({ 
+      // Step 1: Approve the Rental contract to spend USDC on behalf of the tenant
+      const approveHash = await writeContractAsync({
+        address: USDC_ADDRESS,
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [contractAddress, expectedRent as bigint],
+      });
+
+      // Wait for the approve transaction to be confirmed before calling payRent
+      await publicClient!.waitForTransactionReceipt({ hash: approveHash });
+
+      // Step 2: Call payRent, which triggers transferFrom internally
+      const tx = await writeContractAsync({
           address: contractAddress,
           abi: Rental.abi,
           functionName: "payRent",
-          value: parseEther(String(rentAmount) ?? "0"),
       });
-      
+
       setTxHash(tx);
     }
     catch (error) {
@@ -67,10 +89,10 @@ export function usePayRent(contractAddress: Address)  {
   };
 
 
-  return { payRent, 
-    txHash, 
-    isPending, 
-    isError, 
-    isSuccess, 
+  return { payRent,
+    txHash,
+    isPending,
+    isError,
+    isSuccess,
     isLoading: rentAmountLoading };
 }

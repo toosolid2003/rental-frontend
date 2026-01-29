@@ -33,6 +33,7 @@ export default function newLeaseForm()  {
     const { createLease } = useContractManagement();
     const { address } = useAccount();
     const [isOpen, setIsOpen] = useState(false);
+    const usdcContract = process.env.NEXT_PUBLIC_USDC_CONTRACT;
 
     const onSubmit: SubmitHandler<LeaseInput> = async(data) => {
         console.log(data);
@@ -44,7 +45,8 @@ export default function newLeaseForm()  {
                 landlord: address, // connected wallet                                                       
                 startDate: Math.floor(new Date(data.start_date).getTime() / 1000),                           
                 endDate: Math.floor(new Date(data.end_date).getTime() / 1000),                               
-                location: data.location
+                location: data.location,
+                token: usdcContract as Address,
             });
             console.log("New lease address: ", leaseAddress);
             setIsOpen(false);        

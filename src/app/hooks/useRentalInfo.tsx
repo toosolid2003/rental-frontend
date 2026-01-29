@@ -1,5 +1,5 @@
 import {useReadContract, useAccount} from 'wagmi';
-import { Address, formatEther } from 'viem';
+import { Address, formatUnits } from 'viem';
 import { useMemo } from 'react';
 import Rental from "@/lib/Rental.json";
 
@@ -68,7 +68,7 @@ export const useRentalInfo = (contractAddress: Address) => {
 
 
     const rent = typeof rentRead.data === "bigint"
-        ? Number(formatEther(rentRead.data))
+        ? Number(formatUnits(rentRead.data, 6))
         : undefined;
 
     // normalize raw contract output into a stable Payment[] array

@@ -11,7 +11,8 @@ interface LeaseParams   {
     landlord: Address;                                                                               
     startDate: number;                                                                               
     endDate: number;                                                                                 
-    location: string; 
+    location: string;
+    token: Address;
 }
 
 export const useContractManagement = () => {
@@ -43,7 +44,8 @@ export const useContractManagement = () => {
                   params.landlord,
                   params.startDate,
                   params.endDate,
-                  params.location
+                  params.location,
+                  params.token,
                 ]
             })
             console.log("Transaction submitted:", hash);
