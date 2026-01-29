@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { Button } from "./ui/button";
 import { useRentalInfo } from "@/app/hooks/useRentalInfo";
 import { useRouter } from "next/navigation";
@@ -34,7 +34,6 @@ const PaymentHistory = ({leaseAddress, displayPayButton = true}: {leaseAddress: 
 
     // Listening to RentPaid events and fetch the updated payment schedule when it happens.
     useWatchRent(leaseAddress, refetchPayments)
-
     // Process payments to add color and filter unpaid
     const processedPayments = useMemo(() => {
         const rawPayments = (payments as Payment[]) || [];

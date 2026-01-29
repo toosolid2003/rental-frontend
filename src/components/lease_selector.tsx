@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem} from "./ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup} from "./ui/select";
 import NewLeaseForm from "@/components/newLease"
 import { useContractManagement } from "@/app/hooks/useContractManagement";
 import { useAccount, useReadContract } from 'wagmi'
@@ -22,30 +22,33 @@ export function LeaseSelector() {
 
     const { leasesbyTenant, leasesbyLandlord } = useContractManagement();
     const [selectedLease, setSelectedLease] = useState<Address | undefined>();
-    let leases = (leasesbyTenant.data as Address[]) ?? [];
-    let landlordLeases = (leasesbyLandlord.data as Address[]) ?? [];
+    const tenantLeases = (leasesbyTenant.data as Address[]) ?? [];
+    const landlordLeases = (leasesbyLandlord.data as Address[]) ?? [];
+    const allLeases = [...new Set([...tenantLeases, ...landlordLeases])];
 
     useEffect(() => {
-        if (leases.length > 0 && !selectedLease) {
-            setSelectedLease(leases[0]);
+        if (allLeases.length > 0 && !selectedLease) {
+            setSelectedLease(allLeases[0]);
         }
-    }, [leases])
+    }, [allLeases.length])
     
     return (
         <>
             <div className="flex flex-row justify-between">
-                <Select value={selectedLease} onValueChange={(value) => setSelectedLease(value as Address)}>
+                {allLeases.length > 0 ? (<div>
+                    <Select value={selectedLease} onValueChange={(value) => setSelectedLease(value as Address)}>
                     <SelectTrigger className="w-full max-w-48">
                         <SelectValue placeholder="Select a value"/>
                     </SelectTrigger>
                     <SelectContent>
-                        {leases.map((addr) => (
+                        {allLeases.map((addr) => (
                             <SelectItem key={addr} value={addr}>
                                 <LeaseOption leaseAddress={addr} />
                             </SelectItem>
                         ))}
                     </SelectContent>
-                </Select>
+                    </Select>
+                </div>) : <p> No lease attached to this address</p>}
                 <NewLeaseForm />
             </div>
             {selectedLease && <PaymentHistory leaseAddress={selectedLease} />}
