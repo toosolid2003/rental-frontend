@@ -21,7 +21,7 @@ const PaymentScreen = ({leaseAddress}:{leaseAddress: Address}) => {
   const router = useRouter();
   const {payRent, isPending, isError, isSuccess, txHash } = usePayRent(leaseAddress);
   const [isPaying, setIsPaying] = useState(false);
-  const {landlord, rentAmount, rentAmountLoading, payments} = useRentalInfo(leaseAddress);
+  const {landlord, rentAmount, rentAmountLoading, payments, isLocationRead, locationRead} = useRentalInfo(leaseAddress);
 
   const handleConfirm = async() => {
     setIsPaying(true);
@@ -74,8 +74,8 @@ const PaymentScreen = ({leaseAddress}:{leaseAddress: Address}) => {
 <>
         <div className="flex-col justify-between mx-auto max-w-sm border-t border-b pb-8 pt-8">
           <div className="flex flex-row justify-between pb-4">
-            <H3>Lease #1</H3>
-            <p className="text-right">1600 Pensylvania Ave NW <br/> Washington DC</p>
+            <H3>Location</H3>
+            <p className="text-right">{locationRead ? (locationRead as String) : ("Loading")}</p>
           </div>
           <div className="flex flex-row justify-between pb-4">
             <H3>Rental Period</H3>

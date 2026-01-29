@@ -45,6 +45,7 @@ export const useRentalInfo = (contractAddress: Address) => {
         account: address,
     })
 
+    // retrieve location
     const locationRead = useReadContract({
         abi: Rental.abi,
         address: contractAddress,

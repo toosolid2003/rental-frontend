@@ -28,7 +28,7 @@ export function LeaseSelector() {
 
     useEffect(() => {
         if (allLeases.length > 0 && !selectedLease) {
-            setSelectedLease(allLeases[0]);
+            setSelectedLease(allLeases[allLeases.length - 1]);
         }
     }, [allLeases.length])
     
