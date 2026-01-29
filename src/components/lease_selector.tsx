@@ -1,34 +1,54 @@
 "use client"
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem} from "./ui/select";
-import { Button } from "./ui/button";
 import NewLeaseForm from "@/components/newLease"
+import { useContractManagement } from "@/app/hooks/useContractManagement";
+import { useAccount, useReadContract } from 'wagmi'
+import { Address } from "viem";
+import Rental from "@/lib/Rental.json";
+import PaymentHistory from "./paymentHistory";
+
+function LeaseOption({ leaseAddress }: { leaseAddress: Address }) {
+    const { data: loc } = useReadContract({
+        abi: Rental.abi,
+        address: leaseAddress,
+        functionName: "loc",
+    });
+    return <>{(loc as string) ?? leaseAddress}</>;
+}
 
 export function LeaseSelector() {
+
+    const { leasesbyTenant, leasesbyLandlord } = useContractManagement();
+    const [selectedLease, setSelectedLease] = useState<Address | undefined>();
+    let leases = (leasesbyTenant.data as Address[]) ?? [];
+    let landlordLeases = (leasesbyLandlord.data as Address[]) ?? [];
+
+    useEffect(() => {
+        if (leases.length > 0 && !selectedLease) {
+            setSelectedLease(leases[0]);
+        }
+    }, [leases])
     
-    // TODO: replace itemList with a call to the blockchain: getLeasesByTenant => hook to enrich
-    const itemList = [
-        {label: 'Lease #1', value: 'lease1'},
-        {label: 'Lease #2', value: 'lease2'},
-    ]
     return (
-        <div className="flex flex-row justify-between">
-            <Select>
-                <SelectTrigger className="w-full max-w-48">
-                    <SelectValue placeholder="Select a value"/>
-                </SelectTrigger>
-                <SelectContent>
-                    {itemList.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                            {item.label}
-                        </SelectItem>
-                    ))
-                    }
-                </SelectContent>
-            </Select>
-            <NewLeaseForm />
-            {/* <Button className="bg-indigo-600 text-white rounded-xl">Create lease</Button> */}
-        </div>
+        <>
+            <div className="flex flex-row justify-between">
+                <Select value={selectedLease} onValueChange={(value) => setSelectedLease(value as Address)}>
+                    <SelectTrigger className="w-full max-w-48">
+                        <SelectValue placeholder="Select a value"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                        {leases.map((addr) => (
+                            <SelectItem key={addr} value={addr}>
+                                <LeaseOption leaseAddress={addr} />
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <NewLeaseForm />
+            </div>
+            {selectedLease && <PaymentHistory leaseAddress={selectedLease} />}
+        </>
     )
 }

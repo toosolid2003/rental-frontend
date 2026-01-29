@@ -5,7 +5,7 @@ import { Address } from 'viem';
 import { useRentalInfo } from './useRentalInfo';
 import Rental from "@/lib/Rental.json"
 
-export function usePayRent()  {
+export function usePayRent(contractAddress: Address)  {
   const { writeContractAsync } = useWriteContract();
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const {isPending, isSuccess, isError}  = useWaitForTransactionReceipt({
@@ -13,8 +13,7 @@ export function usePayRent()  {
     confirmations: 1,
 });
 
-  const {rentAmount, rentAmountLoading} = useRentalInfo();
-  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
+  const {rentAmount, rentAmountLoading} = useRentalInfo(contractAddress);
 
   const storeHash = useCallback(async() => {
 

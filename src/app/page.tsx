@@ -27,8 +27,8 @@ export default function Home() {
         <Profile paymentSuccess={paymentSuccess}/>
         <div className="max-w-md mx-auto px-4">
           <LeaseSelector />
+          {/* <Lease /> */}
         </div>
-        <Lease />
       </>) : <DisconnectedHome />}
     </>
   );

@@ -16,21 +16,35 @@ interface Payment {
 }
 
 
-const PaymentScreen = () => {
+const PaymentScreen = ({leaseAddress}:{leaseAddress: Address}) => {
   
   const router = useRouter();
-  const {payRent, isPending, isError, isSuccess, txHash } = usePayRent();
+  const {payRent, isPending, isError, isSuccess, txHash } = usePayRent(leaseAddress);
   const [isPaying, setIsPaying] = useState(false);
-  const {landlord, rentAmount, rentAmountLoading, payments} = useRentalInfo();
+  const {landlord, rentAmount, rentAmountLoading, payments} = useRentalInfo(leaseAddress);
 
   const handleConfirm = async() => {
     setIsPaying(true);
-    payRent();
+    try {
+      await payRent();
+    } catch {
+      setIsPaying(false);
+    }
   }
 
   const handleCancel = async() => {
     router.push('/')
   }
+
+  useEffect(() => {
+    if(isError) {
+      setIsPaying(false);
+      toast.error("Payment failed", {
+        description: "The transaction could not be confirmed",
+        duration: 4000
+      });
+    }
+  }, [isError])
 
   useEffect(() => {
     // On success, display a success toast and route the user back to the dashboard

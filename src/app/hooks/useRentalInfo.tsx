@@ -10,9 +10,7 @@ export interface Payment {
   onTime: boolean;
 }
 
-export const useRentalInfo = () => {
-
-    const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
+export const useRentalInfo = (contractAddress: Address) => {
     const { address } = useAccount();
 
     // Retrieve score
@@ -45,6 +43,19 @@ export const useRentalInfo = () => {
         address: contractAddress,
         functionName: "payDate",
         account: address,
+    })
+
+    const locationRead = useReadContract({
+        abi: Rental.abi,
+        address: contractAddress,
+        functionName: "loc"
+    })
+
+    // Retrieve tenant (owner) address
+    const tenantRead = useReadContract({
+        abi: Rental.abi,
+        address: contractAddress,
+        functionName: "owner",
     })
 
     // Retrieve payment schedule
@@ -97,6 +108,9 @@ export const useRentalInfo = () => {
         isPaymentsError: paymentsRead.isError,
         refetchPayments: paymentsRead.refetch,
         refetchScore: scoreRead.refetch,
+        locationRead: locationRead.data,
+        isLocationRead: locationRead.isLoading,
+        tenant: tenantRead.data as Address | undefined,
     }
 
 }

@@ -33,7 +33,7 @@ function Profile()  {
                    isLoading ? "Loading balance" : Number(balance?.formatted).toFixed(1)
                  }</div>
                <div className="text-xs text-white/70 ml-1 mb-0.5">{
-                 isLoading ? "" : "ETH"
+                 isLoading ? "" : "USDC"
                }</div>
              </div>
 

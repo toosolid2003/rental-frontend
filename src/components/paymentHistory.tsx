@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { useRentalInfo } from "@/app/hooks/useRentalInfo";
 import { useRouter } from "next/navigation";
 import { useWatchRent } from "@/app/hooks/usePaymentEvents";
+import { useAccount } from "wagmi";
 import { Address } from "viem";
 
 // Coming directly from the contract
@@ -17,11 +18,11 @@ interface EnhancedPayment extends Payment {
 }
 
 
-
-const PaymentHistory = ({displayPayButton = true}) => {
-    const { rentAmount, rentAmountLoading, payments, isPaymentsLoading, refetchPayments } = useRentalInfo();
+const PaymentHistory = ({leaseAddress, displayPayButton = true}: {leaseAddress: Address, displayPayButton?: boolean}) => {
+    const { rentAmount, rentAmountLoading, payments, isPaymentsLoading, refetchPayments, tenant } = useRentalInfo(leaseAddress);
+    const { address } = useAccount();
     const router = useRouter();
-    const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as Address;
+    const isTenant = address && tenant && address.toLowerCase() === tenant.toLowerCase();
 
     // Date format options: request a weekday along with a long date
     const options: Intl.DateTimeFormatOptions = {
@@ -32,7 +33,7 @@ const PaymentHistory = ({displayPayButton = true}) => {
     };
 
     // Listening to RentPaid events and fetch the updated payment schedule when it happens.
-    useWatchRent(contractAddress, refetchPayments)
+    useWatchRent(leaseAddress, refetchPayments)
 
     // Process payments to add color and filter unpaid
     const processedPayments = useMemo(() => {
@@ -63,7 +64,7 @@ const PaymentHistory = ({displayPayButton = true}) => {
     }, [payments, isPaymentsLoading]);
 
     const handlePay = async () => {
-        router.push('/payment')
+        router.push(`/payment?lease=${leaseAddress}`)
     };
 
     if (isPaymentsLoading) {
@@ -72,7 +73,6 @@ const PaymentHistory = ({displayPayButton = true}) => {
 
     return (
         <div className="space-y-2 max-w-md mx-auto">
-            <div>
                 {[...processedPayments]
                 .sort((a, b) => Number(b.date) - Number(a.date))
                 .map((p, i) => (
@@ -92,7 +92,7 @@ const PaymentHistory = ({displayPayButton = true}) => {
                                         <span className="text-black-500">{rentAmount?.toString()}</span>
                                     )}
                                 </div>
-                                <div className="text-xs text-gray-500 mb-0.5 ml-1">ETH</div>
+                                <div className="text-xs text-gray-500 mb-0.5 ml-1">USD</div>
                             </div>
                         </div>
                         {p.paid ? (
@@ -104,17 +104,16 @@ const PaymentHistory = ({displayPayButton = true}) => {
                                     }`}
                                 />
                             </div>
-                        ) : (
-                            <Button 
-                                className="bg-indigo-600 text-white rounded-xl px-6 py-2" 
+                        ) : isTenant ? (
+                            <Button
+                                className="bg-indigo-600 text-white rounded-xl px-6 py-2"
                                 onClick={handlePay} >
                                 Pay
                             </Button>
-                        )}
+                        ) : <span className="text-sm">Expected</span>}
                     </div>
                 ))}
             </div>
-        </div>
     );
 };
 

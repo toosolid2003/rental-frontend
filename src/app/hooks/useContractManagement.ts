@@ -90,13 +90,20 @@ export const useContractManagement = () => {
         abi: LeaseFactory.abi,
         address: contractAddress,
         functionName: "getLeasesByTenant",
-        account: address,
+        args: address ? [address] : undefined,
     });
 
-    // Retrieve contracts by landlord address
+
+    const leasesbyLandlord = useReadContract({
+        abi: LeaseFactory.abi,
+        address: contractAddress,
+        functionName: "getLeasesByLandlord",
+        args: address ? [address] : undefined,
+    });
 
     return{
         createLease,
-        leasesbyTenant
+        leasesbyTenant,
+        leasesbyLandlord,
     }
 }
