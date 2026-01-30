@@ -1,11 +1,12 @@
 "use client"
 
+import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import PaymentScreen from "@/components/payment"
 import Profile from "@/components/profile"
 import { Address } from "viem"
 
-export default function Payment()   {
+function PaymentContent() {
     const searchParams = useSearchParams();
     const leaseAddress = searchParams.get("lease") as Address | null;
 
@@ -18,5 +19,13 @@ export default function Payment()   {
         <Profile />
         <PaymentScreen leaseAddress={leaseAddress} />
         </>
+    )
+}
+
+export default function Payment() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <PaymentContent />
+        </Suspense>
     )
 }

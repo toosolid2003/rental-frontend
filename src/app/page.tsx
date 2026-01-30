@@ -4,7 +4,6 @@ import { useAccount } from "wagmi"
 import { useState, useEffect } from "react";
 import DisconnectedHome from "@/components/disconnected";
 import Profile from "@/components/profile"
-import Lease from "@/components/lease";
 import { LeaseSelector } from "@/components/lease_selector";
 
 export default function Home() {
@@ -24,7 +23,7 @@ export default function Home() {
   return (
     <>
       {isConnected ? (<>
-        <Profile paymentSuccess={paymentSuccess}/>
+        <Profile />
         <div className="max-w-md mx-auto px-4">
           <LeaseSelector />
           {/* <Lease /> */}
