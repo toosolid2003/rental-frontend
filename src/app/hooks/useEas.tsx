@@ -9,10 +9,10 @@ import { BrowserProvider } from "ethers";
 import { Address } from "viem";
 import { toEpoch } from "@/lib/utils";
 
-const EAS_GRAPHQL_URL = "https://sepolia.easscan.org/graphql";
+const EAS_GRAPHQL_URL = "https://base.easscan.org/graphql";
 
 
-const EASContractAddress = "0xC2679fBD37d54388Ce493F1DB75320D236e1815e";
+const EASContractAddress = "0x4200000000000000000000000000000000000021";
 const schemaUID = "0x998f3887d5a782407412b13d54afa8bc6d44b345e947988f8798531cdea269c2";
 
 export const useEasAttestation = () => {
@@ -101,7 +101,7 @@ export const useEasAttestation = () => {
       }
     `;
 
-    const response = await fetch("https://sepolia.easscan.org/graphql", {
+    const response = await fetch(EAS_GRAPHQL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query }),
